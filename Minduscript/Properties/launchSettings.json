@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Minduscript": {
+      "commandName": "Project",
+      "commandLineArgs": "-i \"test.ms\" --il --l"
+    }
+  }
+}

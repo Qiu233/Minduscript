@@ -1,0 +1,239 @@
+区分大小写
+
+量的种类：
+	1.entity:各类设备/单位
+	2.value:数值
+	3.@resource:游戏资源
+	4."text":字符串
+指令描述中[]标识量，默认为数值类型，否则标识为具体的类型
+
+指令
+1.read:从储存设备读取数据
+read [result] [mem:e] [pos]
+
+2.write:写入数据到储存设备
+write [result] [mem:e] [pos]
+
+3.draw:在屏幕上进行基于像素操作的绘图
+draw <mode> [arg0] [arg1] [arg2] [arg3] [arg4] [arg5]
+mode的可能性：
+	1.clear
+		[R] [G] [B]
+	2.color
+		[R] [G] [B] [A]
+	3.stroke
+		[width]
+	4.line
+		[x1] [y1] [x2] [y2]
+	5.rect
+		[x] [y] [width] [height]
+	6.lineRect
+		[x] [y] [width] [height]
+	7.poly
+		[x] [y] [sides] [radius] [rotation]
+	8.linePoly
+		[x] [y] [sides] [radius] [rotation]
+	9.triangle
+		[x1] [y1] [x2] [y2] [x3] [y3]
+	10.image
+		[x] [y] [image:r] [size] [rotation]
+
+4.print
+print [text:t]
+
+5.drawflush
+drawflush [screen:e]
+
+6.printflush
+printflush [message:e]
+
+7.getlink
+getlink [link:e] [index]
+
+8.control
+control <mode> [block:e] [arg0] [arg1] [arg2] [arg3]
+
+mode的取值:
+	1.shoot
+		[block:e] [x] [y] [shoot]
+	2.shootp
+		[block:e] [unit] [shoot]
+	3.configure
+		[block:e] [value]
+	4.color:设置照明器的光色
+		[block:e] [R] [G] [B]
+
+9.radar
+radar <pred0:attr> <pred1:attr> <pred2:attr> <sort_accordance> [detector:e] [order:bool(0:1)] [result:u]
+
+attr的取值:
+	1.any
+	2.enemy
+	3.ally
+	4.player
+	5.attacker
+	6.flying
+	7.boss
+	8.ground
+
+sort_accordance的取值:
+	1.distance
+	2.health
+	3.shield
+	4.armor
+	5.maxHealth
+
+10.sensor
+sensor [result] [block:e] [attr:r]
+
+11.set
+set [dst] [src]
+
+12.op
+op <optr> [result] [a] [b]
+
+optr的取值:
+	1.add
+	2.sub
+	3.mul
+	4.div
+	5.idiv
+	6.mod
+	7.pow
+	8.equal
+	9.notEqual
+	10.land
+	11.lessThan
+	12.lessThanEq
+	13.greaterThan
+	14.greaterThanEq
+	15.strictEqual
+	16.shl
+	17.shr
+	18.or
+	19.and
+	20.xor
+	21.not
+	22.max
+	23.min
+	24.angle
+	25.len
+	26.noise
+	27.abs
+	28.log
+	29.log10
+	30.sin
+	31.cos
+	32.tan
+	33.floor
+	34.ceil
+	35.sqrt
+	36.rand
+	
+13.end
+
+14.jump
+jump [pos:c] <condition> [value1] [value2]
+
+condition取值:
+	1.equal
+	2.notEqual
+	3.lessThan
+	4.lessThanEq
+	5.greaterThan
+	6.greaterThanEq
+	7.strictEqual
+	8.always
+
+15.ubind
+ubind [unit:r]
+
+16.ucontrol
+ucontrol <inst> [arg0] [arg1] [arg2] [arg3] [arg4]
+
+inst:
+	idle
+	stop
+	move
+	approach
+	boost
+	pathfind
+	target
+	targetp
+	itemDrop
+	itemTake
+	payDrop
+	payTake
+	mine
+	flag
+	build
+	getBlock
+	within
+
+17.uradar
+uradar <pred0:attr> <pred1:attr> <pred2:attr> <sort_accordance> 0 [order:bool(0:1)] [result:e]
+
+18.ulocate
+ulocate <target> <group> [enemy:bool(0:1)] [ore:r] [outx] [outy] [found:bool(0:1)] [building:e]
+
+target:
+	ore
+	building
+	spawn
+	damaged
+	
+group:
+	core
+	storage
+	generator
+	turret
+	factory
+	repair
+	rally
+	battery
+	resupply
+	reactor
+ulocate ore core true @copper outx outy found building
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
