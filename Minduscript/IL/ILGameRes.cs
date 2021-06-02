@@ -4,18 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Minduscript.Parse.AST
+namespace Minduscript.IL
 {
-	[Obsolete("Temporarily obsoleted")]
-	public class Expr_GameRes : Expression
+	public abstract class ILGameRes : ILOperand
 	{
-		public Expr_GameRes(SourcePosition src) : base(src)
-		{
-		}
 		public string Name
 		{
 			get;
 			set;
+		}
+		public ILGameRes(SourcePosition pos) : base(pos)
+		{
 		}
 	}
 }

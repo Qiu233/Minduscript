@@ -9,6 +9,9 @@ namespace Minduscript.IL
 	public enum ILType
 	{
 		Nop,
+
+		ASMCall,//asmcall $name $ $ $
+
 		Using,//using $a as $b $ $
 		Set,//$a = $b $ $
 		Assignment,//$a = $b $c $op
@@ -27,5 +30,6 @@ namespace Minduscript.IL
 		Jg,
 		Jge,
 		Jse,
+
 	}
 }

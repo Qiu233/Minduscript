@@ -358,8 +358,7 @@ namespace Minduscript.Parse
 				ILInstructions.AddLast(
 					new ILInstruction(su.SourcePosition, ILType.Using,
 					GenerateExpressionR(su.Target),
-					new ILResource(su.Resource.SourcePosition,
-					su.Resource.Name)));
+					new ILComponent(su.Resource.SourcePosition) { Name = su.Resource.Name }));
 			}
 			else if (stmt is Stmt_Var sv)
 			{
@@ -455,6 +454,7 @@ namespace Minduscript.Parse
 		}
 		private void GenerateImports()
 		{
+			Target.Namespaces["inst"] = InstAssembly.Inst;
 			foreach (var s in MSAssembly.Body)
 			{
 				if (s is Stmt_Import si)

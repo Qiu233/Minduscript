@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Minduscript.IL
 {
-	public class ILMacro : ILOperand, IILExecutable
+	public class ILMacro : ILOperand, IILExecutable, IILCallable
 	{
 		public string Name
 		{
@@ -18,12 +18,13 @@ namespace Minduscript.IL
 			get;
 			set;
 		}
-		public ILOperandCollection<ILVariable> Params
+
+		public ILOperandCollection<ILInstruction> Instructions
 		{
 			get;
 		}
 
-		public ILOperandCollection<ILInstruction> Instructions
+		public ILOperandCollection<ILVariable> Params
 		{
 			get;
 		}

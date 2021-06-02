@@ -199,14 +199,11 @@ namespace Minduscript.IL.Optimization
 						Nodes[target] = il;
 						break;
 					case ILType.Param:
-						if (arg1 != null)
+						if (target != null)
 						{
-							il.Children.Add(Nodes[arg1]);
-							Nodes[arg1].Parent.Add(il);
+							il.Children.Add(Nodes[target]);
+							Nodes[target].Parent.Add(il);
 						}
-						Nodes[target].Parent.Add(il);
-						il.Children.Add(Nodes[target]);
-						Nodes[target] = il;
 						break;
 					case ILType.Mem_Read:
 						if (arg1 != null)
@@ -326,6 +323,7 @@ namespace Minduscript.IL.Optimization
 			blk.IN.Clear();
 			blk.OUT.Clear();
 			LinkedListNode<DataFlowInstruction> il = blk.Instructions.Last;
+			
 			while (il != null)
 			{
 				switch (il.Value.Bind.Type)

@@ -50,6 +50,10 @@ namespace Minduscript.IL.Optimization
 					ILsToRep[il].AddRange(macro.Instructions);
 					ILsToRep[il].Add(new ILInstruction(il.SourcePosition, ILType.Set, retV, macro.ReturnValue));//set return value
 				}
+				else if (il.Type == ILType.ASMCall)//call
+				{
+					Params.Clear();
+				}
 			}
 			//replace ils
 			foreach (var (il2r, insts) in ILsToRep)

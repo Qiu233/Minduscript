@@ -98,8 +98,44 @@ namespace Minduscript.IL
 			}
 			return null;
 		}
+		private ParamResource GetResource(ILComponent operand)
+		{
+			return new ParamResource(operand.Name);
+		}
+		private Param GetParam(ILOperand op)
+		{
+			if (op is ILComponent ilr)
+				return GetResource(ilr);
+			else if (op is ILValue ilv)
+				return GetEvaluable(ilv);
+			return null;
+		}
+		private T GetAttribute<T>(ILAttribute c) where T : struct
+		{
+			return Enum.Parse<T>(c.Name.ToString());
+		}
+
+		private Instruction ASMCall(string name, List<ILInstruction> ps)
+		{
+			return name switch
+			{
+				"read" => new Read(GetVar(ps[0].Target as ILVariable), GetParam(ps[1].Target) as ParamEvaluable, GetParam(ps[2].Target) as ParamEvaluable),
+				"write" => new Read(GetParam(ps[0].Target) as ParamEvaluable, GetParam(ps[1].Target) as ParamEvaluable, GetParam(ps[2].Target) as ParamEvaluable),
+				"draw" => new Draw(
+					GetAttribute<DrawModes>(ps[0].Target as ILAttribute),
+					GetParam(ps[1].Target),
+					GetParam(ps[2].Target),
+					GetParam(ps[3].Target),
+					GetParam(ps[4].Target),
+					GetParam(ps[5].Target),
+					GetParam(ps[6].Target)),
+				_ => null,
+			};
+		}
 		public void CompileToASM(TextWriter tw)
 		{
+			ILOperandCollection<ILInstruction> Params = new ILOperandCollection<ILInstruction>();
+			ILOperandCollection<ILInstruction> P2D = new ILOperandCollection<ILInstruction>();
 			foreach (var il in Instructions)
 			{
 				InstMap.Add(il, Assembler.CurrentInstructionIndex);
@@ -109,8 +145,12 @@ namespace Minduscript.IL
 						//jump - 1 notEqual x false
 						Assembler.Assemble(new Jump(-1, Conditions.notEqual, 0, 0));
 						break;
+					case ILType.ASMCall:
+						Assembler.Assemble(ASMCall((il.Target as ILConst).Value.ToString(), Params.ToList()));
+						Params.Clear();
+						break;
 					case ILType.Using:
-						Assembler.Assemble(new Set(GetVar(il.Target as ILVariable), Assembler[(il.Arg1 as ILResource).Name]));
+						Assembler.Assemble(new Set(GetVar(il.Target as ILVariable), Assembler[(il.Arg1 as ILComponent).Name]));
 						break;
 					case ILType.Set:
 						Assembler.Assemble(new Set(GetVar(il.Target as ILVariable), GetEvaluable(il.Arg1 as ILValue)));
@@ -180,7 +220,12 @@ namespace Minduscript.IL
 								).Value);
 						break;
 					case ILType.Param:
+						Params.AddLast(il);
+						P2D.AddLast(il);
+						break;
 					case ILType.Call:
+						Params.Clear();
+						break;
 					default:
 						throw new AssemblerException("Instructions of param and call cannot be passed to final assembler");
 				}

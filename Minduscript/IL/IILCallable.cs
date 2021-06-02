@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace Minduscript.IL
 {
-	public class ILResource : ILGameRes
+	public interface IILCallable
 	{
-		public ILResource(SourcePosition pos) : base(pos)
+		public ILOperandCollection<ILVariable> Params
 		{
+			get;
 		}
 	}
 }

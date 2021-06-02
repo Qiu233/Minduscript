@@ -131,8 +131,12 @@ namespace Minduscript.IL
 					Out.Write(GetProcessedIndex(ili.GetHashCode()));
 				else if (operand is ILMacro ilm)
 					Out.Write(ilm.Name);
+				else if (operand is ILComponent ilcomp)
+					Out.Write(ilcomp.Name);
 				else if (operand is ILResource ilr)
 					Out.Write(ilr.Name);
+				else if (operand is ILAttribute ilattr)
+					Out.Write(ilattr.Name);
 				else if (operand is ILOperator ilo)
 					Out.Write(ilo.Type.ToString());
 			}
@@ -152,10 +156,14 @@ namespace Minduscript.IL
 					case ILType.Nop:
 						Out.Write("nop");
 						break;
+					case ILType.ASMCall:
+						Out.Write("asmcall ");
+						GetOperand(il.Target);
+						break;
 					case ILType.Using:
 						Out.Write("using ");
 						GetOperand(il.Target);
-						Out.Write(" as ");
+						Out.Write(" = ");
 						GetOperand(il.Arg1);
 						break;
 					case ILType.Set:
