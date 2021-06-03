@@ -8,9 +8,10 @@ namespace Minduscript.IL
 {
 	public static class InstAssembly
 	{
-		private static void AddMacro(string name, IReadOnlyList<ILInstruction> insts, IReadOnlyList<ILVariable> ps)
+		private static void AddMacro(string name, IReadOnlyList<ILInstruction> insts, IReadOnlyList<ILVariable> ps, ILVariable retV)
 		{
 			ILMacro m = new ILMacro(new SourcePosition());
+			m.ReturnValue = retV;
 			m.Name = name;
 			foreach (var ins in insts)
 				m.Instructions.AddLast(ins);
@@ -35,7 +36,7 @@ namespace Minduscript.IL
 					ils.Add(new ILInstruction(new SourcePosition(), ILType.Param, v));
 				}
 				ils.Add(new ILInstruction(new SourcePosition(), ILType.ASMCall, new ILConst(new SourcePosition()) { Value = "draw" }));
-				AddMacro("draw_clear", ils, ps);
+				AddMacro("draw_clear", ils, ps, new ILVariable(new SourcePosition()));
 			}
 			#endregion
 		}
