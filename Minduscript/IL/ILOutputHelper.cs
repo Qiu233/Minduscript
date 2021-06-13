@@ -131,12 +131,8 @@ namespace Minduscript.IL
 					Out.Write(GetProcessedIndex(ili.GetHashCode()));
 				else if (operand is ILMacro ilm)
 					Out.Write(ilm.Name);
-				else if (operand is ILComponent ilcomp)
-					Out.Write(ilcomp.Name);
-				else if (operand is ILResource ilr)
-					Out.Write(ilr.Name);
-				else if (operand is ILAttribute ilattr)
-					Out.Write(ilattr.Name);
+				else if (operand is ILGameConst ilgc)
+					Out.Write(ilgc.Name);
 				else if (operand is ILOperator ilo)
 					Out.Write(ilo.Type.ToString());
 			}

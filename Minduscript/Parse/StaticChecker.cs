@@ -256,6 +256,11 @@ namespace Minduscript.Parse
 				if (si1.Namespace != null)
 					NamespaceSymbolTable.AddSymbol(si1.Namespace);
 			}
+			else if(stmt is Stmt_ASMCall sac)
+			{
+				foreach (var arg in sac.Args)
+					CheckExpr(arg);
+			}
 		}
 		private void CheckEmbededStmt(Statement stmt)
 		{

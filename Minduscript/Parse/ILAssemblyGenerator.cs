@@ -358,7 +358,7 @@ namespace Minduscript.Parse
 				ILInstructions.AddLast(
 					new ILInstruction(su.SourcePosition, ILType.Using,
 					GenerateExpressionR(su.Target),
-					new ILComponent(su.Resource.SourcePosition) { Name = su.Resource.Name }));
+					new ILGameConst(su.Resource.SourcePosition) { Name = su.Resource.Name }));
 			}
 			else if (stmt is Stmt_Var sv)
 			{
@@ -450,11 +450,28 @@ namespace Minduscript.Parse
 				ILInstructions.AddLast(jn);
 				sc1.Loop.Entry.Header.Add(jn);
 			}
+			else if (stmt is Stmt_ASMCall sac)
+			{
+				List<ILOperand> ps = new List<ILOperand>();
+				foreach (var arg in sac.Args)
+				{
+					if (arg is Expr_GameConst egc)
+					{
+						ps.Add(new ILGameConst(egc.SourcePosition) { Name = egc.Content });
+					}
+					else
+					{
+						ps.Add(GenerateExpressionR(arg));
+					}
+				}
+				foreach (var p in ps)
+					ILInstructions.AddLast(new ILInstruction(p.SourcePosition, ILType.Param, p));
+				ILInstructions.AddLast(new ILInstruction(sac.SourcePosition, ILType.ASMCall, new ILConst(new SourcePosition()) { Value = sac.Macro }));
+			}
 			PopTempVar();
 		}
 		private void GenerateImports()
 		{
-			Target.Namespaces["inst"] = InstAssembly.Inst;
 			foreach (var s in MSAssembly.Body)
 			{
 				if (s is Stmt_Import si)

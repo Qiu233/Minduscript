@@ -243,6 +243,20 @@ namespace Minduscript.Lex
 				token.Value = c;
 				token.Type = TokenType.BRACE_R;
 			}
+			else if (Source[Index] == '$')
+			{
+				content.Append(Source[Index++]);
+				string c = content.ToString();
+				token.Value = c;
+				token.Type = TokenType.OPTR;
+			}
+			else if (Source[Index] == '#')
+			{
+				content.Append(Source[Index++]);
+				string c = content.ToString();
+				token.Value = c;
+				token.Type = TokenType.OPTR;
+			}
 			return token;
 		}
 	}

@@ -6,9 +6,14 @@ using System.Threading.Tasks;
 
 namespace Minduscript.IL
 {
-	public class ILAttribute : ILGameRes
+	public class ILGameConst : ILOperand
 	{
-		public ILAttribute(SourcePosition pos) : base(pos)
+		public string Name
+		{
+			get;
+			set;
+		}
+		public ILGameConst(SourcePosition pos) : base(pos)
 		{
 		}
 	}

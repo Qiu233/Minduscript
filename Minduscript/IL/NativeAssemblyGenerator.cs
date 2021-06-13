@@ -98,19 +98,11 @@ namespace Minduscript.IL
 			}
 			return null;
 		}
-		private ParamResource GetResource(ILComponent operand)
+		private ParamResource GetResource(ILGameConst operand)
 		{
 			return new ParamResource(operand.Name);
 		}
-		private Param GetParam(ILOperand op)
-		{
-			if (op is ILComponent ilr)
-				return GetResource(ilr);
-			else if (op is ILValue ilv)
-				return GetEvaluable(ilv);
-			return null;
-		}
-		private T GetAttribute<T>(ILAttribute c) where T : struct
+		private T GetAttribute<T>(ILGameConst c) where T : struct
 		{
 			return Enum.Parse<T>(c.Name.ToString());
 		}
@@ -119,16 +111,80 @@ namespace Minduscript.IL
 		{
 			return name switch
 			{
-				"read" => new Read(GetVar(ps[0].Target as ILVariable), GetParam(ps[1].Target) as ParamEvaluable, GetParam(ps[2].Target) as ParamEvaluable),
-				"write" => new Read(GetParam(ps[0].Target) as ParamEvaluable, GetParam(ps[1].Target) as ParamEvaluable, GetParam(ps[2].Target) as ParamEvaluable),
+				"read" => new Read(GetVar(
+					ps[0].Target as ILVariable),
+					GetEvaluable(ps[1].Target as ILValue),
+					GetEvaluable(ps[2].Target as ILValue)),
+				"write" => new Read(
+					GetEvaluable(ps[0].Target as ILValue),
+					GetEvaluable(ps[1].Target as ILValue),
+					GetEvaluable(ps[2].Target as ILValue)),
 				"draw" => new Draw(
-					GetAttribute<DrawModes>(ps[0].Target as ILAttribute),
-					GetParam(ps[1].Target),
-					GetParam(ps[2].Target),
-					GetParam(ps[3].Target),
-					GetParam(ps[4].Target),
-					GetParam(ps[5].Target),
-					GetParam(ps[6].Target)),
+					GetAttribute<DrawModes>(ps[0].Target as ILGameConst),
+					GetEvaluable(ps[1].Target as ILValue),
+					GetEvaluable(ps[2].Target as ILValue),
+					GetEvaluable(ps[3].Target as ILValue),
+					GetEvaluable(ps[4].Target as ILValue),
+					GetEvaluable(ps[5].Target as ILValue),
+					GetEvaluable(ps[6].Target as ILValue)),
+				"print" => new Print(GetEvaluable(ps[0].Target as ILValue)),
+				"drawflush" => new DrawFlush(GetEvaluable(ps[0].Target as ILValue)),
+				"printflush" => new PrintFlush(GetEvaluable(ps[0].Target as ILValue)),
+				"getlink" => new GetLink(GetVar(ps[0].Target as ILVariable), GetEvaluable(ps[1].Target as ILValue)),
+				"control" => new Control(
+					GetAttribute<ControlModes>(ps[0].Target as ILGameConst),
+					GetEvaluable(ps[1].Target as ILValue),
+					GetEvaluable(ps[2].Target as ILValue),
+					GetEvaluable(ps[3].Target as ILValue),
+					GetEvaluable(ps[4].Target as ILValue),
+					GetEvaluable(ps[5].Target as ILValue)),
+				"radar" => new Radar(
+					GetAttribute<UnitAttributes>(ps[0].Target as ILGameConst),
+					GetAttribute<UnitAttributes>(ps[1].Target as ILGameConst),
+					GetAttribute<UnitAttributes>(ps[2].Target as ILGameConst),
+					GetAttribute<UnitSortAccordance>(ps[3].Target as ILGameConst),
+					GetEvaluable(ps[4].Target as ILValue),
+					GetEvaluable(ps[5].Target as ILValue),
+					GetVar(ps[6].Target as ILVariable)),
+				"sensor" => new Sensor(
+					GetVar(ps[0].Target as ILVariable),
+					GetEvaluable(ps[1].Target as ILValue),
+					GetResource(ps[2].Target as ILGameConst)),
+				"set" => new Set(
+					GetVar(ps[0].Target as ILVariable),
+					GetEvaluable(ps[1].Target as ILValue)),
+				"op" => new Op(
+					GetAttribute<Operators>(ps[0].Target as ILGameConst),
+					GetVar(ps[1].Target as ILVariable),
+					GetEvaluable(ps[2].Target as ILValue),
+					GetEvaluable(ps[3].Target as ILValue)),
+				"end" => new End(),
+				"ubind" => new UBind(
+					GetResource(ps[0].Target as ILGameConst)),
+				"ucontrol" => new UControl(
+					GetAttribute<UControlModes>(ps[0].Target as ILGameConst),
+					GetVar(ps[1].Target as ILVariable),
+					GetEvaluable(ps[2].Target as ILValue),
+					GetEvaluable(ps[3].Target as ILValue),
+					GetEvaluable(ps[4].Target as ILValue),
+					GetEvaluable(ps[5].Target as ILValue)),
+				"uradar" => new URadar(
+					GetAttribute<UnitAttributes>(ps[0].Target as ILGameConst),
+					GetAttribute<UnitAttributes>(ps[1].Target as ILGameConst),
+					GetAttribute<UnitAttributes>(ps[2].Target as ILGameConst),
+					GetAttribute<UnitSortAccordance>(ps[3].Target as ILGameConst),
+					GetEvaluable(ps[4].Target as ILValue),
+					GetEvaluable(ps[5].Target as ILValue),
+					GetVar(ps[6].Target as ILVariable)),
+				"ulocate" => new ULocate(
+					GetAttribute<TileTypes>(ps[0].Target as ILGameConst),
+					GetAttribute<BuildingGroups>(ps[1].Target as ILGameConst),
+					GetEvaluable(ps[2].Target as ILValue),
+					GetResource(ps[3].Target as ILGameConst),
+					GetVar(ps[4].Target as ILVariable),
+					GetVar(ps[5].Target as ILVariable),
+					GetVar(ps[6].Target as ILVariable),
+					GetVar(ps[7].Target as ILVariable)),
 				_ => null,
 			};
 		}
@@ -150,7 +206,7 @@ namespace Minduscript.IL
 						Params.Clear();
 						break;
 					case ILType.Using:
-						Assembler.Assemble(new Set(GetVar(il.Target as ILVariable), Assembler[(il.Arg1 as ILComponent).Name]));
+						Assembler.Assemble(new Set(GetVar(il.Target as ILVariable), Assembler[(il.Arg1 as ILGameConst).Name]));
 						break;
 					case ILType.Set:
 						Assembler.Assemble(new Set(GetVar(il.Target as ILVariable), GetEvaluable(il.Arg1 as ILValue)));
@@ -180,43 +236,43 @@ namespace Minduscript.IL
 					case ILType.Je:
 						GetJmps(il.Target as ILInstruction).
 							Add(Assembler.Assemble(
-								new Jump(null as ParamJmpTarget, Conditions.equal, 0, 0)
+								new Jump(null as ParamJmpTarget, Conditions.equal, GetEvaluable(il.Arg1 as ILValue), GetEvaluable(il.Arg2 as ILValue))
 								).Value);
 						break;
 					case ILType.Jne:
 						GetJmps(il.Target as ILInstruction).
 							Add(Assembler.Assemble(
-								new Jump(null as ParamJmpTarget, Conditions.notEqual, 0, 0)
+								new Jump(null as ParamJmpTarget, Conditions.notEqual, GetEvaluable(il.Arg1 as ILValue), GetEvaluable(il.Arg2 as ILValue))
 								).Value);
 						break;
 					case ILType.Jl:
 						GetJmps(il.Target as ILInstruction).
 							Add(Assembler.Assemble(
-								new Jump(null as ParamJmpTarget, Conditions.lessThan, 0, 0)
+								new Jump(null as ParamJmpTarget, Conditions.lessThan, GetEvaluable(il.Arg1 as ILValue), GetEvaluable(il.Arg2 as ILValue))
 								).Value);
 						break;
 					case ILType.Jle:
 						GetJmps(il.Target as ILInstruction).
 							Add(Assembler.Assemble(
-								new Jump(null as ParamJmpTarget, Conditions.lessThanEq, 0, 0)
+								new Jump(null as ParamJmpTarget, Conditions.lessThanEq, GetEvaluable(il.Arg1 as ILValue), GetEvaluable(il.Arg2 as ILValue))
 								).Value);
 						break;
 					case ILType.Jg:
 						GetJmps(il.Target as ILInstruction).
 							Add(Assembler.Assemble(
-								new Jump(null as ParamJmpTarget, Conditions.greaterThan, 0, 0)
+								new Jump(null as ParamJmpTarget, Conditions.greaterThan, GetEvaluable(il.Arg1 as ILValue), GetEvaluable(il.Arg2 as ILValue))
 								).Value);
 						break;
 					case ILType.Jge:
 						GetJmps(il.Target as ILInstruction).
 							Add(Assembler.Assemble(
-								new Jump(null as ParamJmpTarget, Conditions.greaterThanEq, 0, 0)
+								new Jump(null as ParamJmpTarget, Conditions.greaterThanEq, GetEvaluable(il.Arg1 as ILValue), GetEvaluable(il.Arg2 as ILValue))
 								).Value);
 						break;
 					case ILType.Jse:
 						GetJmps(il.Target as ILInstruction).
 							Add(Assembler.Assemble(
-								new Jump(null as ParamJmpTarget, Conditions.strictEqual, 0, 0)
+								new Jump(null as ParamJmpTarget, Conditions.strictEqual, GetEvaluable(il.Arg1 as ILValue), GetEvaluable(il.Arg2 as ILValue))
 								).Value);
 						break;
 					case ILType.Param:

@@ -329,6 +329,28 @@ namespace Minduscript.Parse
 			}
 			return f;
 		}
+
+		private List<Expression> GetAttributes()
+		{
+			List<Expression> es = new List<Expression>();
+			while (!Match(TokenType.OPTR, "#"))
+			{
+				if (Match(TokenType.COMMA))
+				{
+					Accept();//,
+				}
+				if (Match(TokenType.OPTR, "$"))
+				{
+					Accept();//$
+					Token iden = Accept(TokenType.IDEN);
+					es.Add(new Expr_GameConst(iden.SourcePosition) { Content = iden.Value });
+				}
+				else
+					es.Add(E());
+			}
+			return es;
+		}
+
 		private Expression F()//()
 		{
 			if (Match(TokenType.PARENTHESES_L))
@@ -554,6 +576,18 @@ namespace Minduscript.Parse
 					Accept(TokenType.SEMICOLON);
 					return sa;
 				}
+			}
+			else if (Match(TokenType.OPTR, "#"))
+			{
+				Accept();
+				Token iden = Accept(TokenType.IDEN);
+				Stmt_ASMCall ec = new Stmt_ASMCall(SourcePosition);
+
+				ec.Macro = iden.Value;
+				ec.Args = GetAttributes();
+				Accept(TokenType.OPTR, "#");
+
+				return ec;
 			}
 			return null;
 		}

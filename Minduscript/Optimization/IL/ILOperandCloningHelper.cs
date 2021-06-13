@@ -24,12 +24,8 @@ namespace Minduscript.Optimization.IL
 				return ilins;//temporarily
 			else if (v is ILMacro ilm)//macro ref
 				return ilm;
-			else if (v is ILComponent ilcomp)
-				return new ILComponent(ilcomp.SourcePosition) { Name = ilcomp.Name };
-			else if (v is ILAttribute ilattr)
-				return new ILAttribute(ilattr.SourcePosition) { Name = ilattr.Name };
-			else if (v is ILResource ilr)
-				return new ILResource(ilr.SourcePosition) { Name = ilr.Name };
+			else if (v is ILGameConst ilcomp)
+				return new ILGameConst(ilcomp.SourcePosition) { Name = ilcomp.Name };
 			else if (v is ILOperator ilOptr)
 				return new ILOperator(ilOptr.SourcePosition) { Type = ilOptr.Type };
 			else if (v is ILVariable ilv)

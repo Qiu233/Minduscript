@@ -4,16 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Minduscript.IL
+namespace Minduscript.Parse.AST
 {
-	public abstract class ILGameRes : ILOperand
+	public class Expr_GameConst : Expression
 	{
-		public string Name
+		public string Content
 		{
 			get;
 			set;
 		}
-		public ILGameRes(SourcePosition pos) : base(pos)
+		public Expr_GameConst(SourcePosition src) : base(src)
 		{
 		}
 	}
