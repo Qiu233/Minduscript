@@ -9,7 +9,7 @@ namespace Minduscript.Lex
 {
 	public class Lexer
 	{
-		public static readonly string[] KeyWords = new string[] { "assembly", "macro", "import", "as", "using", "if", "else", "while", "break", "continue", "return", "var" };
+		public static readonly string[] KeyWords = new string[] { "assembly", "function", "import", "as", "using", "if", "else", "while", "break", "continue", "return", "var" ,"true","false"};
 		public CompilingInfoHandler LexInfoHandler
 		{
 			get;

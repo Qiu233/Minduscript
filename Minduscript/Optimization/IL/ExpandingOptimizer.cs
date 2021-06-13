@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace Minduscript.Optimization.IL
 {
 	/// <summary>
-	/// Expanding all macro call
+	/// Expanding all function calls
 	/// Instructions typed param will also be removed
-	/// If the optimizee is an ILAssembly, macros in its default namespace will be optimized first
+	/// If the optimizee is an ILAssembly, functions in its default namespace will be optimized first
 	/// Time complexity: O(n)
 	/// </summary>
 	public class ExpandingOptimizer : BaseOptimizer
@@ -23,8 +23,8 @@ namespace Minduscript.Optimization.IL
 		{
 			Log("Running expanding optimization...");
 			if (SourceBind is ILAssembly asm)
-				foreach (var macro in asm.Macros)
-					AssembledOptimizer.GetDefaultOptimizer(new OptimizerContext(macro, Context.CompilerContext)).Run();//After which the macro get expanded and optmized
+				foreach (var func in asm.Functions)
+					AssembledOptimizer.GetDefaultOptimizer(new OptimizerContext(func, Context.CompilerContext)).Run();//After which the function get expanded and optmized
 
 			Dictionary<ILInstruction, List<ILInstruction>> ILsToRep = new Dictionary<ILInstruction, List<ILInstruction>>();
 			ILOperandCollection<ILInstruction> Params = new ILOperandCollection<ILInstruction>();
@@ -39,8 +39,8 @@ namespace Minduscript.Optimization.IL
 				{
 					ILsToRep[il] = new List<ILInstruction>();
 					ILVariable retV = il.Target as ILVariable;//variable to save the return value
-					ILMacro macro = (il.Arg1 as ILMacro).Clone();//clone a macro to call
-					var ps = Params.Zip(macro.Params);
+					ILFunction function = (il.Arg1 as ILFunction).Clone();//clone a function to call
+					var ps = Params.Zip(function.Params);
 					foreach (var (First, Second) in ps)//param v -> set argv = v
 					{
 						First.Type = ILType.Set;
@@ -48,8 +48,8 @@ namespace Minduscript.Optimization.IL
 						First.Target = Second;
 					}
 					Params.Clear();
-					ILsToRep[il].AddRange(macro.Instructions);
-					ILsToRep[il].Add(new ILInstruction(il.SourcePosition, ILType.Set, retV, macro.ReturnValue));//set return value
+					ILsToRep[il].AddRange(function.Instructions);
+					ILsToRep[il].Add(new ILInstruction(il.SourcePosition, ILType.Set, retV, function.ReturnValue));//set return value
 				}
 				else if (il.Type == ILType.ASMCall)//call
 				{

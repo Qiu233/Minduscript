@@ -86,15 +86,15 @@ namespace Minduscript.IL
 				PushContext(asm);
 				if (asm is ILAssembly ilasm)
 				{
-					OutputHeaderTabs(); Out.WriteLine("Macros:");
-					foreach (var macro in ilasm.Macros)
-						Output(macro);
+					OutputHeaderTabs(); Out.WriteLine("Functions:");
+					foreach (var func in ilasm.Functions)
+						Output(func);
 					OutputHeaderTabs(); Out.WriteLine("Main:");
 				}
-				else if (asm is ILMacro ilmacro)
+				else if (asm is ILFunction ilfunc)
 				{
-					OutputHeaderTabs(); Out.Write($"Macro ({Context[ilmacro.ReturnValue]}) {ilmacro.Name}({string.Join(",", from v in ilmacro.Params select Context[v])}):");
-					OutputHeaderTabs(); Out.WriteLine($"# At {ilmacro.SourcePosition}");
+					OutputHeaderTabs(); Out.Write($"Function ({Context[ilfunc.ReturnValue]}) {ilfunc.Name}({string.Join(",", from v in ilfunc.Params select Context[v])}):");
+					OutputHeaderTabs(); Out.WriteLine($"# At {ilfunc.SourcePosition}");
 				}
 				Context.TabsCount++;
 				OutputHeaderTabs(); Out.WriteLine("# Body:");
@@ -129,7 +129,7 @@ namespace Minduscript.IL
 				}
 				else if (operand is ILInstruction ili)
 					Out.Write(GetProcessedIndex(ili.GetHashCode()));
-				else if (operand is ILMacro ilm)
+				else if (operand is ILFunction ilm)
 					Out.Write(ilm.Name);
 				else if (operand is ILGameConst ilgc)
 					Out.Write(ilgc.Name);
@@ -138,7 +138,7 @@ namespace Minduscript.IL
 			}
 			private string GetProcessedIndex(int index)
 			{
-				if (Context.Executable is ILMacro)
+				if (Context.Executable is ILFunction)
 					return string.Format("M{0:X8}", index);
 				return string.Format("G{0:X8}", index);
 			}

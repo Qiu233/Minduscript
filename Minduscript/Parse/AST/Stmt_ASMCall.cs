@@ -11,7 +11,7 @@ namespace Minduscript.Parse.AST
 		public Stmt_ASMCall(SourcePosition src) : base(src)
 		{
 		}
-		public string Macro
+		public string Function
 		{
 			get;
 			set;

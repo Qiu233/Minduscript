@@ -366,7 +366,7 @@ namespace Minduscript.Parse
 				if (Match(TokenType.PARENTHESES_L))//call
 				{
 					Expr_Call ec = new Expr_Call(SourcePosition);
-					ec.Macro = iden.Value;
+					ec.Function = iden.Value;
 					Accept();//(
 					ec.Args = GetArgs();
 					Accept(TokenType.PARENTHESES_R);//)
@@ -387,7 +387,7 @@ namespace Minduscript.Parse
 					Token subName = Accept(TokenType.IDEN);
 					Expr_Call ec = new Expr_Call(SourcePosition);
 					ec.Namespace = iden.Value;
-					ec.Macro = subName.Value;
+					ec.Function = subName.Value;
 					Accept();//(
 					ec.Args = GetArgs();
 					Accept(TokenType.PARENTHESES_R);//)
@@ -411,6 +411,24 @@ namespace Minduscript.Parse
 				Expr_ConstNumber ecn = new Expr_ConstNumber(SourcePosition)
 				{
 					Value = float.Parse(Accept().Value)
+				};
+				return ecn;
+			}
+			else if (Match(TokenType.KEYWORD, "true"))
+			{
+				Accept();
+				Expr_ConstNumber ecn = new Expr_ConstNumber(SourcePosition)
+				{
+					Value = 1
+				};
+				return ecn;
+			}
+			else if (Match(TokenType.KEYWORD, "false"))
+			{
+				Accept();
+				Expr_ConstNumber ecn = new Expr_ConstNumber(SourcePosition)
+				{
+					Value = 0
 				};
 				return ecn;
 			}
@@ -583,7 +601,7 @@ namespace Minduscript.Parse
 				Token iden = Accept(TokenType.IDEN);
 				Stmt_ASMCall ec = new Stmt_ASMCall(SourcePosition);
 
-				ec.Macro = iden.Value;
+				ec.Function = iden.Value;
 				ec.Args = GetAttributes();
 				Accept(TokenType.OPTR, "#");
 
@@ -604,19 +622,19 @@ namespace Minduscript.Parse
 			Accept(TokenType.BRACE_R);
 			return block;
 		}
-		private Stmt_Macro GetMacro()
+		private Stmt_Function GetFunction()
 		{
-			if (Match(TokenType.KEYWORD, "macro"))
+			if (Match(TokenType.KEYWORD, "function"))
 			{
-				Stmt_Macro macro = new Stmt_Macro(SourcePosition);
+				Stmt_Function function = new Stmt_Function(SourcePosition);
 				Accept();
-				macro.MacroName = Accept(TokenType.IDEN).Value;
-				macro.ReturnValue = new Expr_Variable(SourcePosition);
+				function.FunctionName = Accept(TokenType.IDEN).Value;
+				function.ReturnValue = new Expr_Variable(SourcePosition);
 				Accept(TokenType.PARENTHESES_L);
-				macro.Params = GetParams();
+				function.Params = GetParams();
 				Accept(TokenType.PARENTHESES_R);
-				macro.Code = GetBlock();
-				return macro;
+				function.Code = GetBlock();
+				return function;
 			}
 			return null;
 		}
@@ -626,7 +644,7 @@ namespace Minduscript.Parse
 			if ((result = GetPreCompilationStatement()) != null)
 			{
 			}
-			else if ((result = GetMacro()) != null)
+			else if ((result = GetFunction()) != null)
 			{
 			}
 			else if ((result = GetVerbalStatement()) != null)
@@ -644,7 +662,7 @@ namespace Minduscript.Parse
 			ParserContext.Initialize();
 			Stmt_Assembly sa = new Stmt_Assembly(SourcePosition);
 			ParserContext.Root = sa;
-			sa.Macros = new List<Stmt_Macro>();
+			sa.Functions = new List<Stmt_Function>();
 			sa.Body = new List<Statement>();
 
 			if (!Match(TokenType.KEYWORD, "assembly"))
@@ -662,8 +680,8 @@ namespace Minduscript.Parse
 			Statement s;
 			while ((s = GetStatement()) != null)
 			{
-				if (s is Stmt_Macro sm)
-					sa.Macros.Add(sm);
+				if (s is Stmt_Function sm)
+					sa.Functions.Add(sm);
 				else
 					sa.Body.Add(s);
 			}

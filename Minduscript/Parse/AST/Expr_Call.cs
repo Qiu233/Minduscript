@@ -16,7 +16,7 @@ namespace Minduscript.Parse.AST
 			get;
 			set;
 		}
-		public string Macro
+		public string Function
 		{
 			get;
 			set;

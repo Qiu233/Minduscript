@@ -21,7 +21,7 @@ namespace Minduscript.IL
 		Mem_Write,//mem_write $var $mem $pos $
 
 		End,//end $ $ $ $
-		Call,//call $retV $macro $ $
+		Call,//call $retV $func $ $
 		Jmp,//jmp $target $ $ $
 		Je,//je $target $a $b $
 		Jne,

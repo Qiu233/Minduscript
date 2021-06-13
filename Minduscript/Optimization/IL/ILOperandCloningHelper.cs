@@ -22,7 +22,7 @@ namespace Minduscript.Optimization.IL
 				return new ILConst(ilc.SourcePosition) { Value = ilc.Value };
 			else if (v is ILInstruction ilins)
 				return ilins;//temporarily
-			else if (v is ILMacro ilm)//macro ref
+			else if (v is ILFunction ilm)//function ref
 				return ilm;
 			else if (v is ILGameConst ilcomp)
 				return new ILGameConst(ilcomp.SourcePosition) { Name = ilcomp.Name };
@@ -65,20 +65,20 @@ namespace Minduscript.Optimization.IL
 		}
 
 		/// <summary>
-		/// Completely clone from a macro with nothing changed
+		/// Completely clone from a function with nothing changed
 		/// </summary>
-		/// <param name="macro">macro to clone</param>
+		/// <param name="function">function to clone</param>
 		/// <returns></returns>
-		public static ILMacro Clone(this ILMacro macro)//O(n)
+		public static ILFunction Clone(this ILFunction function)//O(n)
 		{
-			ILMacro target = new ILMacro(macro.SourcePosition)
+			ILFunction target = new ILFunction(function.SourcePosition)
 			{
-				Name = macro.Name
+				Name = function.Name
 			};
-			macro.Instructions.CloneTo(target.Instructions, out Dictionary<ILVariable, ILVariable> vMap);
-			foreach (var p in macro.Params)
+			function.Instructions.CloneTo(target.Instructions, out Dictionary<ILVariable, ILVariable> vMap);
+			foreach (var p in function.Params)
 				target.Params.AddLast(vMap[p]);
-			target.ReturnValue = CloneOprand(macro.ReturnValue, vMap) as ILVariable;
+			target.ReturnValue = CloneOprand(function.ReturnValue, vMap) as ILVariable;
 			return target;
 		}
 	}

@@ -26,7 +26,7 @@ namespace Minduscript.Parse
 			get;
 			set;
 		}
-		private string CurrentMacro
+		private string CurrentFunction
 		{
 			get;
 			set;
@@ -98,20 +98,20 @@ namespace Minduscript.Parse
 			LocalVariables[ev.Offset] = iv;
 			return iv;
 		}
-		public ILMacro GenerateMacro(Stmt_Macro sm)
+		public ILFunction GenerateFunction(Stmt_Function sm)
 		{
-			CurrentMacro = sm.MacroName;
+			CurrentFunction = sm.FunctionName;
 			var tmpVariables = LocalVariables;
 			var tmpTempVariables = TempVariables;
 			var tmpInsts = ILInstructions;
 
 
-			ILMacro m = new ILMacro(sm.SourcePosition);
+			ILFunction m = new ILFunction(sm.SourcePosition);
 			LocalVariables = new Dictionary<int, ILVariable>();
 			TempVariables = new Dictionary<int, ILVariable>();
 			ILInstructions = m.Instructions;
 
-			m.Name = sm.MacroName;
+			m.Name = sm.FunctionName;
 			m.ReturnValue = GetLocalVariable(sm.ReturnValue);
 			foreach (var p in sm.Params)
 			{
@@ -134,7 +134,7 @@ namespace Minduscript.Parse
 			ILInstructions = tmpInsts;
 			TempVariables = tmpTempVariables;
 			LocalVariables = tmpVariables;
-			CurrentMacro = null;
+			CurrentFunction = null;
 
 			return m;
 		}
@@ -150,7 +150,7 @@ namespace Minduscript.Parse
 			}
 			else if (expr is Expr_Variable ev)
 			{
-				return CurrentMacro == null ? GetGlobalVariable(ev) : GetLocalVariable(ev);
+				return CurrentFunction == null ? GetGlobalVariable(ev) : GetLocalVariable(ev);
 			}
 			else if (expr is Expr_Binary eb)
 			{
@@ -176,16 +176,16 @@ namespace Minduscript.Parse
 				ILVariable retV = defaultTargetVar ?? GetNewTempVar(ec.SourcePosition);
 				foreach (var p in ps)
 					ILInstructions.AddLast(new ILInstruction(p.SourcePosition, ILType.Param, p));
-				ILMacro macro = null;
+				ILFunction func = null;
 				if (ec.Namespace == null)
 				{
-					var ms = Target.Macros.Where(t => t.Name == ec.Macro).ToList();
+					var ms = Target.Functions.Where(t => t.Name == ec.Function).ToList();
 					if (ms.Count == 0)
 					{
-						Context.ThrowILGeneratingError(ec.SourcePosition, $"Macro cannot be called before being defined:({ec.Macro})");
+						Context.ThrowILGeneratingError(ec.SourcePosition, $"Function cannot be called before being defined:({ec.Function})");
 						return CreateConst(0, ec.SourcePosition.Line);
 					}
-					macro = ms[0];
+					func = ms[0];
 				}
 				else//a.b
 				{
@@ -194,20 +194,20 @@ namespace Minduscript.Parse
 						Context.ThrowILGeneratingError(ec.SourcePosition, $"No such namespace:({ec.Namespace})");
 						return CreateConst(0, ec.SourcePosition.Line);
 					}
-					var ms = Target.Namespaces[ec.Namespace].Macros.Where(t => t.Name == ec.Macro).ToList();
+					var ms = Target.Namespaces[ec.Namespace].Functions.Where(t => t.Name == ec.Function).ToList();
 					if (ms.Count == 0)
 					{
-						Context.ThrowILGeneratingError(ec.SourcePosition, $"No such macro ({ec.Macro}) in namespace:({ec.Namespace})");
+						Context.ThrowILGeneratingError(ec.SourcePosition, $"No such function ({ec.Function}) in namespace:({ec.Namespace})");
 						return CreateConst(0, ec.SourcePosition.Line);
 					}
-					macro = ms[0];
+					func = ms[0];
 				}
-				if (ps.Count != macro.Params.Count)
+				if (ps.Count != func.Params.Count)
 				{
-					Context.ThrowILGeneratingError(ec.SourcePosition, $"Number of args do not matches, calling macro ({ec.Macro}), existed:{ps.Count}, required:{macro.Params.Count}");
+					Context.ThrowILGeneratingError(ec.SourcePosition, $"Number of args do not matches, calling function ({ec.Function}), existed:{ps.Count}, required:{func.Params.Count}");
 					return CreateConst(0, ec.SourcePosition.Line);
 				}
-				ILInstructions.AddLast(new ILInstruction(ec.SourcePosition, ILType.Call, retV, macro));
+				ILInstructions.AddLast(new ILInstruction(ec.SourcePosition, ILType.Call, retV, func));
 				return retV;
 			}
 			return null;
@@ -229,13 +229,13 @@ namespace Minduscript.Parse
 				ILInstructions.AddLast(new ILInstruction(em.SourcePosition, ILType.Mem_Write, rv, mem, pos));
 			}
 		}
-		private void GenerateMacros()
+		private void GenerateFunctions()
 		{
-			foreach (var s in MSAssembly.Macros)
+			foreach (var s in MSAssembly.Functions)
 			{
-				ILMacro macro = GenerateMacro(s);
-				Target.Macros.Add(macro);
-				Context.CompilerContext.Log($"Macro generation completed:({macro.Name})");
+				ILFunction func = GenerateFunction(s);
+				Target.Functions.Add(func);
+				Context.CompilerContext.Log($"Function generation completed:({func.Name})");
 			}
 		}
 		private ILConst CreateConst(object v, int line)
@@ -372,10 +372,10 @@ namespace Minduscript.Parse
 			else if (stmt is Stmt_Return sr)
 			{
 				if (sr.ReturnValue != null)
-					GenerateExpressionL(sr.Macro.ReturnValue, sr.ReturnValue);
+					GenerateExpressionL(sr.Function.ReturnValue, sr.ReturnValue);
 				ILInstruction ret = new ILInstruction(sr.SourcePosition, ILType.Jmp, null);
 				ILInstructions.AddLast(ret);
-				(sr.Macro == null ? MSAssembly.Entry : sr.Macro.Entry).Next.Add(ret);
+				(sr.Function == null ? MSAssembly.Entry : sr.Function.Entry).Next.Add(ret);
 			}
 			else if (stmt is Stmt_Assignment sa)
 			{
@@ -466,7 +466,7 @@ namespace Minduscript.Parse
 				}
 				foreach (var p in ps)
 					ILInstructions.AddLast(new ILInstruction(p.SourcePosition, ILType.Param, p));
-				ILInstructions.AddLast(new ILInstruction(sac.SourcePosition, ILType.ASMCall, new ILConst(new SourcePosition()) { Value = sac.Macro }));
+				ILInstructions.AddLast(new ILInstruction(sac.SourcePosition, ILType.ASMCall, new ILConst(new SourcePosition()) { Value = sac.Function }));
 			}
 			PopTempVar();
 		}
@@ -517,9 +517,9 @@ namespace Minduscript.Parse
 			Context.CompilerContext.Log($"Begin to generate ILAssembly from file:（{Target.File}）");
 			Context.CompilerContext.Log("Importing libs...");
 			GenerateImports();
-			Context.CompilerContext.Log("Generating macros...");
-			GenerateMacros();
-			Context.CompilerContext.Log("Checking macros...");
+			Context.CompilerContext.Log("Generating functions...");
+			GenerateFunctions();
+			Context.CompilerContext.Log("Checking functions...");
 			Context.CompilerContext.Log("Generating ILBody...");
 			GenerateAssemblyBody();
 			foreach (var inst in ILInstructions)

@@ -25,7 +25,7 @@ namespace Minduscript.IL
 		{
 			get;
 		}
-		public List<ILMacro> Macros
+		public List<ILFunction> Functions
 		{
 			get;
 		}
@@ -39,7 +39,7 @@ namespace Minduscript.IL
 			File = file;
 			Name = name;
 			Namespaces = new Dictionary<string, ILAssembly>();
-			Macros = new List<ILMacro>();
+			Functions = new List<ILFunction>();
 			Instructions = new ILOperandCollection<ILInstruction>();
 		}
 

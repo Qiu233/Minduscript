@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Minduscript.Parse.AST
 {
-	public class Stmt_Macro : Statement
+	public class Stmt_Function : Statement
 	{
-		public Stmt_Macro(SourcePosition src) : base(src)
+		public Stmt_Function(SourcePosition src) : base(src)
 		{
 		}
-		public string MacroName
+		public string FunctionName
 		{
 			get;
 			set;

@@ -18,7 +18,7 @@ namespace Minduscript.Parse
 			get;
 			set;
 		}
-		private SymbolTable<string> MacroSymbolTable
+		private SymbolTable<string> FuncSymbolTable
 		{
 			get;
 		}
@@ -40,14 +40,14 @@ namespace Minduscript.Parse
 			get;
 			set;
 		}
-		private Stmt_Macro CurrentMacro
+		private Stmt_Function CurrentFunction
 		{
 			get;
 			set;
 		}
-		private bool IsInMacro
+		private bool IsInFunc
 		{
-			get => CurrentMacro != null;
+			get => CurrentFunction != null;
 		}
 		private void PushSymbolTable()
 		{
@@ -66,9 +66,9 @@ namespace Minduscript.Parse
 			}
 			return false;
 		}
-		private bool MacroSymbolExist(string name)
+		private bool FuncSymbolExist(string name)
 		{
-			return MacroSymbolTable.ExistSymbol(name);
+			return FuncSymbolTable.ExistSymbol(name);
 		}
 		private int SymbolOffset(string ev)
 		{
@@ -87,7 +87,7 @@ namespace Minduscript.Parse
 		{
 			Assembly = body;
 			NamespaceSymbolTable = new SymbolTable<string>();
-			MacroSymbolTable = new SymbolTable<string>();
+			FuncSymbolTable = new SymbolTable<string>();
 			SymbolTables = new Stack<SymbolTable<string>>();
 			Context = context;
 			PushSymbolTable();
@@ -98,7 +98,7 @@ namespace Minduscript.Parse
 			{
 				if (!SymbolExist(ev.Name))
 					Context.ThrowStaticCheckingError(ev.SourcePosition, $"Variable should be declared before using:{ev.Name}");
-				ev.IsLocal = IsInMacro;
+				ev.IsLocal = IsInFunc;
 				ev.Offset = SymbolOffset(ev.Name);//set the offset
 			}
 			else if (expr is Expr_Binary eb)
@@ -129,7 +129,7 @@ namespace Minduscript.Parse
 				return;
 			}
 			SymbolTables.Peek().AddSymbol(ev.Name);
-			ev.IsLocal = IsInMacro;
+			ev.IsLocal = IsInFunc;
 			ev.Offset = SymbolOffset(ev.Name);//set the offset
 		}
 		private void CheckStmt(Statement stmt)
@@ -154,16 +154,16 @@ namespace Minduscript.Parse
 					CheckStmt(s);
 				PopSymbolTable();
 			}
-			else if (stmt is Stmt_Macro sm)
+			else if (stmt is Stmt_Function sm)
 			{
-				if (IsInMacro)
+				if (IsInFunc)
 				{
-					Context.ThrowStaticCheckingError(sm.SourcePosition, $"Macro cannot be defined inside a macro:({sm.MacroName})");
+					Context.ThrowStaticCheckingError(sm.SourcePosition, $"Function cannot be defined inside a function:({sm.FunctionName})");
 					return;//Critical error,stop checking
 				}
-				if (MacroSymbolExist(sm.MacroName))
+				if (FuncSymbolExist(sm.FunctionName))
 				{
-					Context.ThrowStaticCheckingError(sm.SourcePosition, $"Definition of macro duplicated in the same file, macro:({sm.MacroName})");
+					Context.ThrowStaticCheckingError(sm.SourcePosition, $"Definition of function duplicated in the same file, function:({sm.FunctionName})");
 				}
 
 				var tmpTables = SymbolTables;
@@ -171,14 +171,14 @@ namespace Minduscript.Parse
 
 				PushSymbolTable();
 
-				CurrentMacro = sm;
+				CurrentFunction = sm;
 				sm.ReturnValue.Offset = 0;
-				MacroSymbolTable.AddSymbol(sm.MacroName);
+				FuncSymbolTable.AddSymbol(sm.FunctionName);
 				foreach (var p in sm.Params)
 					RegisterVariable(p);
 				foreach (var s in sm.Code.Statements)
 					CheckStmt(s);
-				CurrentMacro = null;
+				CurrentFunction = null;
 
 				PopSymbolTable();
 
@@ -204,10 +204,8 @@ namespace Minduscript.Parse
 			}
 			else if (stmt is Stmt_Return sr)
 			{
-				/*if (!IsInMacro)
-					Context.ThrowStaticCheckingError(sr.SourcePosition, $"Return statement can only be used in a macro");*/
 				CheckExpr(sr.ReturnValue);
-				sr.Macro = CurrentMacro;
+				sr.Function = CurrentFunction;
 			}
 			else if (stmt is Stmt_If si)
 			{
@@ -271,7 +269,7 @@ namespace Minduscript.Parse
 		}
 		public void CheckAll()
 		{
-			foreach (var s in Assembly.Macros)
+			foreach (var s in Assembly.Functions)
 				CheckStmt(s);
 			IsPreCompiling = true;
 			foreach (var s in Assembly.Body)
