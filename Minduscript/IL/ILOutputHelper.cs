@@ -135,6 +135,8 @@ namespace Minduscript.IL
 					Out.Write(ilgc.Name);
 				else if (operand is ILOperator ilo)
 					Out.Write(ilo.Type.ToString());
+				else if (operand is ILResource ilr)
+					Out.Write(ilr.ToString());
 			}
 			private string GetProcessedIndex(int index)
 			{

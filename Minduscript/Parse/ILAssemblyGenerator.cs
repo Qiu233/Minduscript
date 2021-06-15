@@ -152,6 +152,10 @@ namespace Minduscript.Parse
 			{
 				return CurrentFunction == null ? GetGlobalVariable(ev) : GetLocalVariable(ev);
 			}
+			else if (expr is Expr_Res er)
+			{
+				return new ILResource(er.SourcePosition) { Name = er.Name };
+			}
 			else if (expr is Expr_Binary eb)
 			{
 				var ill = GenerateExpressionR(eb.Left);
@@ -358,7 +362,7 @@ namespace Minduscript.Parse
 				ILInstructions.AddLast(
 					new ILInstruction(su.SourcePosition, ILType.Using,
 					GenerateExpressionR(su.Target),
-					new ILGameConst(su.Resource.SourcePosition) { Name = su.Resource.Name }));
+					new ILGameConst(su.Resource.SourcePosition) { Name = su.Resource.Content }));
 			}
 			else if (stmt is Stmt_Var sv)
 			{

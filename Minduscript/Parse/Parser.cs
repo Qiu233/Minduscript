@@ -360,6 +360,12 @@ namespace Minduscript.Parse
 				Accept(TokenType.PARENTHESES_R);
 				return e;
 			}
+			else if (Match(TokenType.OPTR,"@"))
+			{
+				Accept();
+				Expr_Res res = new Expr_Res(SourcePosition) { Name = Accept(TokenType.IDEN).Value };
+				return res;
+			}
 			else if (Match(TokenType.IDEN))//call/variable
 			{
 				Token iden = Accept(TokenType.IDEN);
@@ -440,12 +446,12 @@ namespace Minduscript.Parse
 		}
 		private Stmt_PreCompilation GetPreCompilationStatement()
 		{
-			if (Match(TokenType.KEYWORD, "import"))//import "example.ms"
+			if (Match(TokenType.KEYWORD, "import"))//import "example.ms";
 			{
 				Stmt_Import s = new Stmt_Import(SourcePosition);
 				Accept();//import
 				s.ImportFile = Accept(TokenType.CONST_STRING).Value;
-				if (Match(TokenType.KEYWORD, "as"))//import "example.ms" as example
+				if (Match(TokenType.KEYWORD, "as"))//import "example.ms" as example;
 				{
 					Accept();//as
 					s.Namespace = Accept(TokenType.IDEN).Value;
@@ -570,8 +576,15 @@ namespace Minduscript.Parse
 				Stmt_Using s = new Stmt_Using(SourcePosition);
 				Accept();
 				s.Target = new Expr_Variable(SourcePosition) { Name = Accept(TokenType.IDEN).Value };
-				Accept(TokenType.OPTR, "=");
-				s.Resource = new Expr_Variable(SourcePosition) { Name = Accept(TokenType.IDEN).Value };
+				if (Match(TokenType.OPTR, "="))
+				{
+					Accept();
+					s.Resource = new Expr_GameConst(SourcePosition) { Content = Accept(TokenType.IDEN).Value };
+				}
+				else
+				{
+					s.Resource = new Expr_GameConst(SourcePosition) { Content = s.Target.Name };
+				}
 				Accept(TokenType.SEMICOLON);
 				return s;
 			}

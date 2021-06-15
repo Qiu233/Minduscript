@@ -9,7 +9,7 @@ namespace Minduscript.Lex
 {
 	public class Lexer
 	{
-		public static readonly string[] KeyWords = new string[] { "assembly", "function", "import", "as", "using", "if", "else", "while", "break", "continue", "return", "var" ,"true","false"};
+		public static readonly string[] KeyWords = new string[] { "assembly", "function", "import", "as", "using", "if", "else", "while", "break", "continue", "return", "var", "true", "false" };
 		public CompilingInfoHandler LexInfoHandler
 		{
 			get;
@@ -250,7 +250,7 @@ namespace Minduscript.Lex
 				token.Value = c;
 				token.Type = TokenType.OPTR;
 			}
-			else if (Source[Index] == '#')
+			else if (Source[Index] == '#' || Source[Index] == '@')
 			{
 				content.Append(Source[Index++]);
 				string c = content.ToString();

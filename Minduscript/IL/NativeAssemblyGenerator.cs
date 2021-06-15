@@ -96,13 +96,17 @@ namespace Minduscript.IL
 			{
 				return GetVar(ilv);
 			}
+			else if (operand is ILResource ilr)
+			{
+				return GetResource(ilr);
+			}
 			return null;
 		}
-		private ParamResource GetResource(ILGameConst operand)
+		private static ParamResource GetResource(ILResource operand)
 		{
 			return new ParamResource(operand.Name);
 		}
-		private T GetAttribute<T>(ILGameConst c) where T : struct
+		private static T GetAttribute<T>(ILGameConst c) where T : struct
 		{
 			return Enum.Parse<T>(c.Name.ToString());
 		}
@@ -149,7 +153,7 @@ namespace Minduscript.IL
 				"sensor" => new Sensor(
 					GetVar(ps[0].Target as ILVariable),
 					GetEvaluable(ps[1].Target as ILValue),
-					GetResource(ps[2].Target as ILGameConst)),
+					GetResource(ps[2].Target as ILResource)),
 				"set" => new Set(
 					GetVar(ps[0].Target as ILVariable),
 					GetEvaluable(ps[1].Target as ILValue)),
@@ -160,7 +164,7 @@ namespace Minduscript.IL
 					GetEvaluable(ps[3].Target as ILValue)),
 				"end" => new End(),
 				"ubind" => new UBind(
-					GetResource(ps[0].Target as ILGameConst)),
+					GetResource(ps[0].Target as ILResource)),
 				"ucontrol" => new UControl(
 					GetAttribute<UControlModes>(ps[0].Target as ILGameConst),
 					GetVar(ps[1].Target as ILVariable),
@@ -180,7 +184,7 @@ namespace Minduscript.IL
 					GetAttribute<TileTypes>(ps[0].Target as ILGameConst),
 					GetAttribute<BuildingGroups>(ps[1].Target as ILGameConst),
 					GetEvaluable(ps[2].Target as ILValue),
-					GetResource(ps[3].Target as ILGameConst),
+					GetResource(ps[3].Target as ILResource),
 					GetVar(ps[4].Target as ILVariable),
 					GetVar(ps[5].Target as ILVariable),
 					GetVar(ps[6].Target as ILVariable),

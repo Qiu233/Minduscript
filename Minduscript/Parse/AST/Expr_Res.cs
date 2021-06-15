@@ -6,20 +6,15 @@ using System.Threading.Tasks;
 
 namespace Minduscript.Parse.AST
 {
-	public class Stmt_Using : Stmt_Verbal
+	public class Expr_Res:Expression
 	{
-		public Stmt_Using(SourcePosition src) : base(src)
-		{
-		}
-		public Expr_Variable Target
+		public string Name
 		{
 			get;
 			set;
 		}
-		public Expr_GameConst Resource
+		public Expr_Res(SourcePosition src) : base(src)
 		{
-			get;
-			set;
 		}
 	}
 }

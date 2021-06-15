@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Minduscript.Assembly
 {
-	public class ParamResource : Param
+	public class ParamResource : ParamEvaluable
 	{
 		public string Name
 		{
