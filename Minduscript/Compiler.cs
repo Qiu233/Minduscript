@@ -24,6 +24,7 @@ namespace Minduscript
 		}
 		public void Compile()
 		{
+			Context.Log("Compiling");
 			var asm = Context.GetAssembly(Context.Options.Input);
 			var entry = asm.Functions.Where(t => t.Name == "main");
 			if (entry.Count() == 0)
@@ -32,8 +33,10 @@ namespace Minduscript
 			}
 			else
 			{
-				using var file = File.Open(Context.Options.Output ?? $"{asm.Name}.asm", FileMode.Create);
+				string name = $"{asm.Name}.asm";
+				using var file = File.Open(Context.Options.Output ?? name, FileMode.Create);
 				NativeAssemblyGenerator.Generate(asm, new StreamWriter(file));
+				Context.Log($"Compialtion completed, asm file generated:{name}");
 			}
 		}
 	}

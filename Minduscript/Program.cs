@@ -24,7 +24,7 @@ namespace Minduscript
 			});
 			if (!File.Exists(options.Input))
 			{
-				Console.WriteLine($"Input file not found:{options.Input},compilation stopping");
+				Console.WriteLine($"Input file not found:{options.Input}, compilation stopping");
 				Environment.Exit(1);
 			}
 			Compiler compiler = new Compiler(options);

@@ -103,7 +103,7 @@ namespace Minduscript
 
 				if (Options.OutputIL)
 				{
-					string ilFile = $"{name}.il";
+					string ilFile = Path.Combine(Path.GetDirectoryName(inputFile), $"{name}.il");
 					using StreamWriter sw = new StreamWriter(File.Create(ilFile));
 					asm.Output(sw);
 					Log($"ILFile generated:({ilFile})");
