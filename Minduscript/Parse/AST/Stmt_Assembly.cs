@@ -21,7 +21,10 @@ namespace Minduscript.Parse.AST
 			get;
 			set;
 		}
-		public List<Statement> Body
+		/// <summary>
+		/// Precompilations and imports
+		/// </summary>
+		public List<Statement> Header
 		{
 			get;
 			set;

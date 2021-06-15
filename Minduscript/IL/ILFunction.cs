@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Minduscript.IL
 {
-	public class ILFunction : ILOperand, IILExecutable, IILCallable
+	public class ILFunction : ILOperand, IILCallable
 	{
 		public string Name
 		{

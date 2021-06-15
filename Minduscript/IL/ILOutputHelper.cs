@@ -12,13 +12,13 @@ namespace Minduscript.IL
 	{
 		public static void Output(this ILAssembly asm, StreamWriter sw)
 		{
-			new ILOutputer(sw).Output(asm);
+			new ILOutputer(sw).OutputASM(asm);
 		}
 
 
 		private class ILExecutionContext
 		{
-			public IILExecutable Executable
+			public ILFunction Executable
 			{
 				get;
 				set;
@@ -46,9 +46,9 @@ namespace Minduscript.IL
 					return (Vars[v] = $"var_{VarIndex++}");
 				}
 			}
-			public ILExecutionContext(IILExecutable executable, int tabsCount)
+			public ILExecutionContext(ILFunction func, int tabsCount)
 			{
-				Executable = executable;
+				Executable = func;
 				TabsCount = tabsCount;
 				Vars = new Dictionary<ILVariable, string>();
 				VarIndex = 0;
@@ -73,7 +73,7 @@ namespace Minduscript.IL
 				Out = sw;
 				Contexts = new Stack<ILExecutionContext>();
 			}
-			private void PushContext(IILExecutable ile)
+			private void PushContext(ILFunction ile)
 			{
 				Contexts.Push(new ILExecutionContext(ile, Contexts.Count == 0 ? 0 : Context.TabsCount + 1));
 			}
@@ -81,21 +81,18 @@ namespace Minduscript.IL
 			{
 				Contexts.Pop();
 			}
-			public void Output(IILExecutable asm)
+			public void OutputASM(ILAssembly asm)
 			{
-				PushContext(asm);
-				if (asm is ILAssembly ilasm)
+				foreach (var func in asm.Functions)
 				{
-					OutputHeaderTabs(); Out.WriteLine("Functions:");
-					foreach (var func in ilasm.Functions)
-						Output(func);
-					OutputHeaderTabs(); Out.WriteLine("Main:");
+					OutputFunction(func);
 				}
-				else if (asm is ILFunction ilfunc)
-				{
-					OutputHeaderTabs(); Out.Write($"Function ({Context[ilfunc.ReturnValue]}) {ilfunc.Name}({string.Join(",", from v in ilfunc.Params select Context[v])}):");
-					OutputHeaderTabs(); Out.WriteLine($"# At {ilfunc.SourcePosition}");
-				}
+			}
+			public void OutputFunction(ILFunction func)
+			{
+				PushContext(func);
+				OutputHeaderTabs(); Out.Write($"Function ({Context[func.ReturnValue]}) {func.Name}({string.Join(",", from v in func.Params select Context[v])}):");
+				OutputHeaderTabs(); Out.WriteLine($"# At {func.SourcePosition}");
 				Context.TabsCount++;
 				OutputHeaderTabs(); Out.WriteLine("# Body:");
 				OutputILs();

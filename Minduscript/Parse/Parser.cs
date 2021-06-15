@@ -360,7 +360,7 @@ namespace Minduscript.Parse
 				Accept(TokenType.PARENTHESES_R);
 				return e;
 			}
-			else if (Match(TokenType.OPTR,"@"))
+			else if (Match(TokenType.OPTR, "@"))
 			{
 				Accept();
 				Expr_Res res = new Expr_Res(SourcePosition) { Name = Accept(TokenType.IDEN).Value };
@@ -573,18 +573,31 @@ namespace Minduscript.Parse
 			}
 			else if (Match(TokenType.KEYWORD, "using"))//using main_cell as cell1
 			{
-				Stmt_Using s = new Stmt_Using(SourcePosition);
 				Accept();
-				s.Target = new Expr_Variable(SourcePosition) { Name = Accept(TokenType.IDEN).Value };
-				if (Match(TokenType.OPTR, "="))
+				Stmt_Using s = new Stmt_Using(SourcePosition);
+				s.Declarations = new List<KeyValuePair<Expr_Variable, Expr_GameConst>>();
+
+				do
 				{
-					Accept();
-					s.Resource = new Expr_GameConst(SourcePosition) { Content = Accept(TokenType.IDEN).Value };
-				}
-				else
-				{
-					s.Resource = new Expr_GameConst(SourcePosition) { Content = s.Target.Name };
-				}
+					Token iden = Accept(TokenType.IDEN);
+					Expr_GameConst value = new Expr_GameConst(iden.SourcePosition);
+					value.Content = iden.Value;
+					if (Match(TokenType.OPTR, "="))
+					{
+						Accept();
+						Token alia = Accept(TokenType.IDEN);
+						value = new Expr_GameConst(alia.SourcePosition);
+						value.Content = alia.Value;
+					}
+					s.Declarations.Add(new KeyValuePair<Expr_Variable, Expr_GameConst>(
+						new Expr_Variable(SourcePosition)
+						{
+							Name = iden.Value
+						}, value));
+					if (!Match(TokenType.COMMA))
+						break;
+					Accept();//,
+				} while (true);
 				Accept(TokenType.SEMICOLON);
 				return s;
 			}
@@ -676,7 +689,7 @@ namespace Minduscript.Parse
 			Stmt_Assembly sa = new Stmt_Assembly(SourcePosition);
 			ParserContext.Root = sa;
 			sa.Functions = new List<Stmt_Function>();
-			sa.Body = new List<Statement>();
+			sa.Header = new List<Statement>();
 
 			if (!Match(TokenType.KEYWORD, "assembly"))
 			{
@@ -696,7 +709,7 @@ namespace Minduscript.Parse
 				if (s is Stmt_Function sm)
 					sa.Functions.Add(sm);
 				else
-					sa.Body.Add(s);
+					sa.Header.Add(s);
 			}
 			return sa;
 		}

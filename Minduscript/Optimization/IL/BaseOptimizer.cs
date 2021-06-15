@@ -20,7 +20,7 @@ namespace Minduscript.Optimization.IL
 		/// IL source bound to this optmizer
 		/// Will be changed after optmization completed
 		/// </summary>
-		public IILExecutable SourceBind
+		public ILFunction SourceBind
 		{
 			get => Context.SourceBind;
 		}

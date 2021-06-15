@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Minduscript.IL
 {
-	public class ILAssembly : IILExecutable
+	public class ILAssembly
 	{
 		public string File
 		{
@@ -29,10 +29,6 @@ namespace Minduscript.IL
 		{
 			get;
 		}
-		public ILOperandCollection<ILInstruction> Instructions
-		{
-			get;
-		}
 
 		public ILAssembly(string file, string name)
 		{
@@ -40,7 +36,6 @@ namespace Minduscript.IL
 			Name = name;
 			Namespaces = new Dictionary<string, ILAssembly>();
 			Functions = new List<ILFunction>();
-			Instructions = new ILOperandCollection<ILInstruction>();
 		}
 
 

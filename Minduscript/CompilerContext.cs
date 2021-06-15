@@ -92,9 +92,12 @@ namespace Minduscript
 				string name = asm.Name;
 
 				//optimizations
-				Optimization.IL.AssembledOptimizer.
-					GetDefaultOptimizer(new Optimization.IL.OptimizerContext(asm, this)).
-					Run();
+				foreach (var func in asm.Functions)
+				{
+					Optimization.IL.AssembledOptimizer.
+						GetDefaultOptimizer(new Optimization.IL.OptimizerContext(func, this)).
+						Run();
+				}
 				AssembledILAssemblies[index] = asm;
 				ILAssemblies.Add(asm);
 

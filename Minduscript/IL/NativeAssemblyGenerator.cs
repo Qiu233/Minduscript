@@ -303,7 +303,7 @@ namespace Minduscript.IL
 		}
 		public static void Generate(ILAssembly asm, TextWriter tw)
 		{
-			new NativeAssemblyGenerator(asm.Instructions).CompileToASM(tw);
+			new NativeAssemblyGenerator(asm.Functions.First(t => t.Name == "main").Instructions).CompileToASM(tw);
 		}
 	}
 }

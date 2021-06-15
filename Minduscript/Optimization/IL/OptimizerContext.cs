@@ -16,7 +16,7 @@ namespace Minduscript.Optimization.IL
 		/// IL source bound to this optmizer
 		/// Will be changed after optmization completed
 		/// </summary>
-		public IILExecutable SourceBind
+		public ILFunction SourceBind
 		{
 			get;
 		}
@@ -25,7 +25,7 @@ namespace Minduscript.Optimization.IL
 			get;
 		}
 
-		public OptimizerContext(IILExecutable sourceBind, CompilerContext compilerContext)
+		public OptimizerContext(ILFunction sourceBind, CompilerContext compilerContext)
 		{
 			SourceBind = sourceBind;
 			CompilerContext = compilerContext;

@@ -25,8 +25,16 @@ namespace Minduscript
 		public void Compile()
 		{
 			var asm = Context.GetAssembly(Context.Options.Input);
-			using var file = File.Open(Context.Options.Output ?? $"{asm.Name}.asm", FileMode.Create);
-			NativeAssemblyGenerator.Generate(asm, new StreamWriter(file));
+			var entry = asm.Functions.Where(t => t.Name == "main");
+			if (entry.Count() == 0)
+			{
+				Context.CompilingInfoHandler.ThrowContextError("Compiling", "Found no main function, compilation stopping.");
+			}
+			else
+			{
+				using var file = File.Open(Context.Options.Output ?? $"{asm.Name}.asm", FileMode.Create);
+				NativeAssemblyGenerator.Generate(asm, new StreamWriter(file));
+			}
 		}
 	}
 }

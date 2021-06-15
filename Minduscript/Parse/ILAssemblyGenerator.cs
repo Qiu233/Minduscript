@@ -359,10 +359,13 @@ namespace Minduscript.Parse
 			}
 			else if (stmt is Stmt_Using su)
 			{
-				ILInstructions.AddLast(
-					new ILInstruction(su.SourcePosition, ILType.Using,
-					GenerateExpressionR(su.Target),
-					new ILGameConst(su.Resource.SourcePosition) { Name = su.Resource.Content }));
+				foreach (var dc in su.Declarations)
+				{
+					ILInstructions.AddLast(
+						new ILInstruction(su.SourcePosition, ILType.Using,
+						GenerateExpressionR(dc.Key),
+						new ILGameConst(dc.Value.SourcePosition) { Name = dc.Value.Content }));
+				}
 			}
 			else if (stmt is Stmt_Var sv)
 			{
@@ -476,7 +479,7 @@ namespace Minduscript.Parse
 		}
 		private void GenerateImports()
 		{
-			foreach (var s in MSAssembly.Body)
+			foreach (var s in MSAssembly.Header)
 			{
 				if (s is Stmt_Import si)
 				{
@@ -502,20 +505,6 @@ namespace Minduscript.Parse
 				}
 			}
 		}
-		private void GenerateAssemblyBody()
-		{
-			var header = new ILInstruction(MSAssembly.SourcePosition, ILType.Nop);
-			ILInstructions.AddLast(header);
-
-			foreach (var s in MSAssembly.Body)
-				GenerateStatement(s);
-
-			var next = new ILInstruction(MSAssembly.SourcePosition, ILType.Nop);
-			ILInstructions.AddLast(next);
-
-			BackPatch(MSAssembly.Entry.Header, header);
-			BackPatch(MSAssembly.Entry.Next, next);
-		}
 		private ILAssembly Generate()
 		{
 			Context.CompilerContext.Log($"Begin to generate ILAssembly from file:（{Target.File}）");
@@ -523,11 +512,6 @@ namespace Minduscript.Parse
 			GenerateImports();
 			Context.CompilerContext.Log("Generating functions...");
 			GenerateFunctions();
-			Context.CompilerContext.Log("Checking functions...");
-			Context.CompilerContext.Log("Generating ILBody...");
-			GenerateAssemblyBody();
-			foreach (var inst in ILInstructions)
-				Target.Instructions.AddLast(inst);
 			Context.CompilerContext.Log($"ILAssembly generation completed:({Target.File})");
 			return Target;
 		}

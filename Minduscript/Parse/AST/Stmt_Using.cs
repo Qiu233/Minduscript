@@ -11,12 +11,8 @@ namespace Minduscript.Parse.AST
 		public Stmt_Using(SourcePosition src) : base(src)
 		{
 		}
-		public Expr_Variable Target
-		{
-			get;
-			set;
-		}
-		public Expr_GameConst Resource
+
+		public List<KeyValuePair<Expr_Variable, Expr_GameConst>> Declarations
 		{
 			get;
 			set;

@@ -147,6 +147,12 @@ namespace Minduscript.Parse
 				IsPreCompiling = false;
 			}
 
+			if (stmt is Stmt_Verbal && CurrentFunction == null)
+			{
+				Context.ThrowStaticCheckingError(stmt.SourcePosition, "Verbal statement must be in a function");
+				return;//ignore
+			}
+
 			if (stmt is Stmt_Block sb)
 			{
 				PushSymbolTable();
@@ -186,7 +192,12 @@ namespace Minduscript.Parse
 			}
 			else if (stmt is Stmt_Using su)
 			{
-				RegisterVariable(su.Target);
+				foreach (var dc in su.Declarations)
+				{
+					RegisterVariable(dc.Key);
+					if (dc.Value != null)
+						CheckExpr(dc.Value);
+				}
 			}
 			else if (stmt is Stmt_Var sv)
 			{
@@ -254,7 +265,7 @@ namespace Minduscript.Parse
 				if (si1.Namespace != null)
 					NamespaceSymbolTable.AddSymbol(si1.Namespace);
 			}
-			else if(stmt is Stmt_ASMCall sac)
+			else if (stmt is Stmt_ASMCall sac)
 			{
 				foreach (var arg in sac.Args)
 					CheckExpr(arg);
@@ -272,7 +283,7 @@ namespace Minduscript.Parse
 			foreach (var s in Assembly.Functions)
 				CheckStmt(s);
 			IsPreCompiling = true;
-			foreach (var s in Assembly.Body)
+			foreach (var s in Assembly.Header)
 				CheckStmt(s);
 			IsPreCompiling = false;
 		}

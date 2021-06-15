@@ -22,9 +22,6 @@ namespace Minduscript.Optimization.IL
 		public override void Run()
 		{
 			Log("Running expanding optimization...");
-			if (SourceBind is ILAssembly asm)
-				foreach (var func in asm.Functions)
-					AssembledOptimizer.GetDefaultOptimizer(new OptimizerContext(func, Context.CompilerContext)).Run();//After which the function get expanded and optmized
 
 			Dictionary<ILInstruction, List<ILInstruction>> ILsToRep = new Dictionary<ILInstruction, List<ILInstruction>>();
 			ILOperandCollection<ILInstruction> Params = new ILOperandCollection<ILInstruction>();
