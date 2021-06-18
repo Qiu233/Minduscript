@@ -21,11 +21,6 @@ namespace Minduscript.Parse.AST
 			get;
 			set;
 		}
-		public Expr_Variable ReturnValue
-		{
-			get;
-			set;
-		}
 		public Stmt_Block Code
 		{
 			get;

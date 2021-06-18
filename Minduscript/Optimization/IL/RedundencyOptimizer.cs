@@ -23,26 +23,41 @@ namespace Minduscript.Optimization.IL
 		{
 			Log("Running redundency optimization...");
 			LinkedListNode<ILInstruction> current = SourceBind.Instructions.First;
-			HashSet<LinkedListNode<ILInstruction>> nops = new HashSet<LinkedListNode<ILInstruction>>();
+			Dictionary<ILInstruction, ILInstruction> nopToR = new Dictionary<ILInstruction, ILInstruction>();
+			HashSet<LinkedListNode<ILInstruction>> nopToD = new HashSet<LinkedListNode<ILInstruction>>();
 			while (current != null)
 			{
-				if(current.Value.Type== ILType.Nop)
+				if (current.Value.Type == ILType.Nop)
 				{
-					nops.Add(current);
-				}
-				if (current.Value.Target is ILInstruction ili)
-				{
-					LinkedListNode<ILInstruction> t = SourceBind.Instructions.Find(ili);
-					if (t.Value.Type != ILType.Nop || t.Next == null)
-						continue;
-					current.Value.Target = t.Next.Value;
+					LinkedListNode<ILInstruction> t = current;
+					while (t.Next != null && t.Value.Type == ILType.Nop)
+						t = t.Next;
+					while (current != t)
+					{
+						nopToR[current.Value] = t.Value;//the inst to dock
+						nopToD.Add(current);//will be deleted later
+						current = current.Next;
+					}
 				}
 				current = current.Next;
 			}
-			nops.Remove(SourceBind.Instructions.Last);
-			foreach (var node in nops)
+			nopToR.Remove(SourceBind.Instructions.Last.Value);//will not delete the nop if it's the last inst
+
+			LinkedListNode<ILInstruction> inst=SourceBind.Instructions.First;
+			while (inst != null)
 			{
-				SourceBind.Instructions.Remove(node);
+				if (inst.Value.Target is ILInstruction ili && //is a jmp
+					ili.Type == ILType.Nop && //jmp to a nop
+					nopToR.TryGetValue(ili, out ILInstruction target)) //to replace
+				{
+					inst.Value.Target = target;
+				}
+				inst = inst.Next;
+			}
+
+			foreach (var nop in nopToD)
+			{
+				SourceBind.Instructions.Remove(nop);
 			}
 		}
 	}

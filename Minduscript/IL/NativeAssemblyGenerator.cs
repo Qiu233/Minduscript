@@ -228,9 +228,6 @@ namespace Minduscript.IL
 					case ILType.Mem_Write:
 						Assembler.Assemble(new Write(GetEvaluable(il.Target as ILValue), GetVar(il.Arg1 as ILVariable), GetEvaluable(il.Arg2 as ILValue)));
 						break;
-					case ILType.End:
-						Assembler.Assemble(new End());
-						break;
 					case ILType.Jmp:
 						GetJmps(il.Target as ILInstruction).
 							Add(Assembler.Assemble(

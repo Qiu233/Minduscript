@@ -9,8 +9,7 @@ namespace Minduscript.Optimization.IL
 {
 	/// <summary>
 	/// Expanding all function calls
-	/// Instructions typed param will also be removed
-	/// If the optimizee is an ILAssembly, functions in its default namespace will be optimized first
+	/// Instructions typed param and ret will be removed
 	/// Time complexity: O(n)
 	/// </summary>
 	public class ExpandingOptimizer : BaseOptimizer
@@ -24,6 +23,7 @@ namespace Minduscript.Optimization.IL
 			Log("Running expanding optimization...");
 
 			Dictionary<ILInstruction, List<ILInstruction>> ILsToRep = new Dictionary<ILInstruction, List<ILInstruction>>();
+			Dictionary<ILInstruction, List<ILInstruction>> RetsToRep = new Dictionary<ILInstruction, List<ILInstruction>>();
 			ILOperandCollection<ILInstruction> Params = new ILOperandCollection<ILInstruction>();
 			//begin to expand the calls
 			foreach (var il in SourceBind.Instructions)
@@ -31,6 +31,10 @@ namespace Minduscript.Optimization.IL
 				if (il.Type == ILType.Param)
 				{
 					Params.AddLast(il);
+				}
+				else if (il.Type == ILType.ASMCall)//call
+				{
+					Params.Clear();
 				}
 				else if (il.Type == ILType.Call)//call
 				{
@@ -45,12 +49,23 @@ namespace Minduscript.Optimization.IL
 						First.Target = Second;
 					}
 					Params.Clear();
-					ILsToRep[il].AddRange(function.Instructions);
-					ILsToRep[il].Add(new ILInstruction(il.SourcePosition, ILType.Set, retV, function.ReturnValue));//set return value
-				}
-				else if (il.Type == ILType.ASMCall)//call
-				{
-					Params.Clear();
+					LinkedListNode<ILInstruction> last = function.Instructions.Last;
+					if (last.Value.Type != ILType.Nop)
+					{
+						last = function.Instructions.AddLast(new ILInstruction(last.Value.SourcePosition, ILType.Nop));
+					}
+					foreach (var ins in function.Instructions)
+					{
+						if (ins.Type == ILType.Ret)
+						{
+							ILsToRep[il].Add(new ILInstruction(ins.SourcePosition, ILType.Set, retV, ins.Target));
+							ILsToRep[il].Add(new ILInstruction(ins.SourcePosition, ILType.Jmp, last.Value));
+						}
+						else
+						{
+							ILsToRep[il].Add(ins);
+						}
+					}
 				}
 			}
 			//replace ils

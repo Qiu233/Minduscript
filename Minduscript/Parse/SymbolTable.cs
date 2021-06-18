@@ -7,27 +7,83 @@ using System.Threading.Tasks;
 
 namespace Minduscript.Parse
 {
-	public class SymbolTable<T>
+	public class Symbol<T>
 	{
-		public Dictionary<T, int> Symbols
+		public T Content
 		{
 			get;
 		}
+		public int Index
+		{
+			get;
+		}
+		public Symbol(T name, int index)
+		{
+			Content = name;
+			Index = index;
+		}
+
+	}
+	public sealed class SymbolTable<T>
+	{
+		public HashSet<Symbol<T>> Symbols
+		{
+			get;
+		}
+		private HashSet<SymbolTable<T>> SubTables
+		{
+			get;
+		}
+		public SymbolTable<T> Parent
+		{
+			get;
+			private set;
+		}
 		public SymbolTable()
 		{
-			Symbols = new Dictionary<T, int>();
+			Symbols = new HashSet<Symbol<T>>();
+			SubTables = new HashSet<SymbolTable<T>>();
 		}
 		public bool ExistSymbol(T ev)
 		{
-			return Symbols.Keys.ToList().Exists(t => t.Equals(ev));
+			return Symbols.ToList().Exists(t => t.Content.Equals(ev));
 		}
 		public void AddSymbol(T ev)
 		{
-			Symbols[ev] = Symbols.Count;
+			Symbols.Add(new Symbol<T>(ev, Symbols.Count));
 		}
-		public int GetSymbolOffset(T ev)
+		public int CountToRoot()
 		{
-			return Symbols[ev];
+			return CountParentToRoot() + Symbols.Count;
+		}
+		public int CountParentToRoot()
+		{
+			SymbolTable<T> cur = Parent;
+			int off = 0;
+			while (true)
+			{
+				if (cur == null)
+					break;
+				off += cur.Symbols.Count;
+				cur = cur.Parent;
+			}
+			return off;
+		}
+
+		public SymbolTable<T> NewSubTable()
+		{
+			SymbolTable<T> a = new SymbolTable<T>();
+			SubTables.Add(a);
+			a.Parent = this;
+			return a;
+		}
+
+		public void RemoveSubTable(SymbolTable<T> t)
+		{
+			if (!SubTables.Contains(t))
+				return;
+			t.Parent = null;
+			SubTables.Remove(t);
 		}
 	}
 }

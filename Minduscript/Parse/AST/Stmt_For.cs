@@ -6,16 +6,10 @@ using System.Threading.Tasks;
 
 namespace Minduscript.Parse.AST
 {
-	public class Expr_Variable : Expression
+	public class Stmt_For : Stmt_Loop
 	{
-		public Expr_Variable(SourcePosition src) : base(src)
+		public Stmt_For(SourcePosition src) : base(src)
 		{
 		}
-		public string Name
-		{
-			get;
-			set;
-		}
-
 	}
 }

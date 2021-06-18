@@ -18,7 +18,7 @@ namespace Minduscript.IL
 
 		private class ILExecutionContext
 		{
-			public ILFunction Executable
+			public ILFunction Function
 			{
 				get;
 				set;
@@ -28,30 +28,10 @@ namespace Minduscript.IL
 				get;
 				set;
 			}
-			private Dictionary<ILVariable, string> Vars
-			{
-				get;
-			}
-			private int VarIndex
-			{
-				get;
-				set;
-			}
-			public string this[ILVariable v]
-			{
-				get
-				{
-					if (Vars.ContainsKey(v))
-						return Vars[v];
-					return (Vars[v] = $"var_{VarIndex++}");
-				}
-			}
 			public ILExecutionContext(ILFunction func, int tabsCount)
 			{
-				Executable = func;
+				Function = func;
 				TabsCount = tabsCount;
-				Vars = new Dictionary<ILVariable, string>();
-				VarIndex = 0;
 			}
 		}
 		private class ILOutputer
@@ -91,7 +71,7 @@ namespace Minduscript.IL
 			public void OutputFunction(ILFunction func)
 			{
 				PushContext(func);
-				OutputHeaderTabs(); Out.Write($"Function ({Context[func.ReturnValue]}) {func.Name}({string.Join(",", from v in func.Params select Context[v])}):");
+				OutputHeaderTabs(); Out.Write($"Function {func.Name}({string.Join(",", from v in func.Params select $"V{v.GetHashCode():X8}")}):");
 				OutputHeaderTabs(); Out.WriteLine($"# At {func.SourcePosition}");
 				Context.TabsCount++;
 				OutputHeaderTabs(); Out.WriteLine("# Body:");
@@ -105,7 +85,7 @@ namespace Minduscript.IL
 			}
 			private void OutputILs()
 			{
-				var ils = Context.Executable.Instructions;
+				var ils = Context.Function.Instructions;
 				foreach (var il in ils)
 				{
 					OutputIL(il);
@@ -116,7 +96,7 @@ namespace Minduscript.IL
 			private void GetOperand(ILOperand operand)
 			{
 				if (operand is ILVariable ilv)
-					Out.Write(Context[ilv]);
+					Out.Write($"V{ilv.GetHashCode().ToString("X8")}");
 				else if (operand is ILConst ilc)
 				{
 					if (ilc.Value is string)
@@ -137,8 +117,8 @@ namespace Minduscript.IL
 			}
 			private string GetProcessedIndex(int index)
 			{
-				if (Context.Executable is ILFunction)
-					return string.Format("M{0:X8}", index);
+				if (Context.Function is ILFunction)
+					return string.Format("I{0:X8}", index);
 				return string.Format("G{0:X8}", index);
 			}
 			private void OutputIL(ILInstruction il)
@@ -177,6 +157,10 @@ namespace Minduscript.IL
 						break;
 					case ILType.Param:
 						Out.Write("param ");
+						GetOperand(il.Target);
+						break;
+					case ILType.Ret:
+						Out.Write("ret ");
 						GetOperand(il.Target);
 						break;
 					case ILType.Call:

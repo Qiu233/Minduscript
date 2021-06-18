@@ -24,6 +24,11 @@ namespace Minduscript.Parse
 		{
 			get;
 		}
+		private bool ForceSemicolon
+		{
+			get;
+			set;
+		}
 		private CompilingInfoHandler InfoHandler
 		{
 			get => ParserContext.InfoHandler;
@@ -39,6 +44,7 @@ namespace Minduscript.Parse
 		public Parser(string code, string file, CompilerContext compilerContext)
 		{
 			ParserContext = new ParserContext(code, file, compilerContext);
+			ForceSemicolon = true;//default
 		}
 		private void NextToken()
 		{
@@ -87,6 +93,13 @@ namespace Minduscript.Parse
 			Token t = CurrentToken;
 			NextToken();
 			return t;
+		}
+		private void TryAccept(TokenType type)
+		{
+			if (Match(type))
+			{
+				Accept();
+			}
 		}
 		private void RestoreFromError()
 		{
@@ -456,7 +469,6 @@ namespace Minduscript.Parse
 					Accept();//as
 					s.Namespace = Accept(TokenType.IDEN).Value;
 				}
-				Accept(TokenType.SEMICOLON);
 				return s;
 			}
 			return null;
@@ -526,18 +538,35 @@ namespace Minduscript.Parse
 				sw.Code = GetStatement();
 				return sw;
 			}
+			else if (Match(TokenType.KEYWORD, "for"))
+			{
+				Accept();//for
+				Stmt_For sf = new Stmt_For(SourcePosition);
+				Accept(TokenType.PARENTHESES_L);
+				sf.Initialization = GetStatement();//init
+				sf.Condition = E();//condition
+				Accept(TokenType.SEMICOLON);
+
+				var tmp = ForceSemicolon;
+				ForceSemicolon = false;
+				sf.Iteration = GetStatement();
+				ForceSemicolon = tmp;
+
+				Accept(TokenType.PARENTHESES_R);
+				sf.Code = GetStatement();
+
+				return sf;
+			}
 			else if (Match(TokenType.KEYWORD, "break"))
 			{
 				Stmt_Break sb = new Stmt_Break(SourcePosition);
 				Accept();
-				Accept(TokenType.SEMICOLON);
 				return sb;
 			}
 			else if (Match(TokenType.KEYWORD, "continue"))
 			{
 				Stmt_Continue sc = new Stmt_Continue(SourcePosition);
 				Accept();
-				Accept(TokenType.SEMICOLON);
 				return sc;
 			}
 			else if (Match(TokenType.KEYWORD, "return"))
@@ -546,7 +575,6 @@ namespace Minduscript.Parse
 				Accept();
 				if (!Match(TokenType.SEMICOLON))//return value;
 					sr.ReturnValue = E();
-				Accept(TokenType.SEMICOLON);
 				return sr;
 			}
 			else if (Match(TokenType.KEYWORD, "var"))
@@ -568,10 +596,9 @@ namespace Minduscript.Parse
 						break;
 					Accept();
 				} while (true);
-				Accept(TokenType.SEMICOLON);
 				return sv;
 			}
-			else if (Match(TokenType.KEYWORD, "using"))//using main_cell as cell1
+			else if (Match(TokenType.KEYWORD, "using"))//using main_cell = cell1;
 			{
 				Accept();
 				Stmt_Using s = new Stmt_Using(SourcePosition);
@@ -598,7 +625,6 @@ namespace Minduscript.Parse
 						break;
 					Accept();//,
 				} while (true);
-				Accept(TokenType.SEMICOLON);
 				return s;
 			}
 			else if (Match(TokenType.IDEN))
@@ -608,7 +634,6 @@ namespace Minduscript.Parse
 				{
 					Stmt_Call sc = new Stmt_Call(ec.SourcePosition);
 					sc.Call = ec;
-					Accept(TokenType.SEMICOLON);
 					return sc;
 				}
 				else if (Match(TokenType.OPTR, "="))//assignment
@@ -617,7 +642,6 @@ namespace Minduscript.Parse
 					sa.Target = target;
 					Accept();//=
 					sa.Value = E();
-					Accept(TokenType.SEMICOLON);
 					return sa;
 				}
 			}
@@ -655,7 +679,6 @@ namespace Minduscript.Parse
 				Stmt_Function function = new Stmt_Function(SourcePosition);
 				Accept();
 				function.FunctionName = Accept(TokenType.IDEN).Value;
-				function.ReturnValue = new Expr_Variable(SourcePosition);
 				Accept(TokenType.PARENTHESES_L);
 				function.Params = GetParams();
 				Accept(TokenType.PARENTHESES_R);
@@ -669,12 +692,20 @@ namespace Minduscript.Parse
 			Statement result;
 			if ((result = GetPreCompilationStatement()) != null)
 			{
+				Accept(TokenType.SEMICOLON);
 			}
 			else if ((result = GetFunction()) != null)
 			{
 			}
 			else if ((result = GetVerbalStatement()) != null)
 			{
+				if (!(result is Stmt_Loop || result is Stmt_If || result is Stmt_Block || result is Stmt_ASMCall))
+				{
+					if (ForceSemicolon)
+						Accept(TokenType.SEMICOLON);
+					else
+						TryAccept(TokenType.SEMICOLON);
+				}
 			}
 			else
 			{
@@ -718,8 +749,7 @@ namespace Minduscript.Parse
 		public ILAssembly CompileToILAssembly()
 		{
 			Stmt_Assembly stmts = ParseAssembly();//first
-			StaticChecker.Check(stmts, ParserContext);
-			return ILAssemblyGenerator.Generate(stmts, ParserContext);
+			return ILAssemblyGenerator.Generate(stmts, StaticChecker.Check(stmts, ParserContext), ParserContext);
 		}
 	}
 }

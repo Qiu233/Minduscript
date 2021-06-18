@@ -30,6 +30,8 @@ namespace Minduscript.Optimization.IL
 				return new ILOperator(ilOptr.SourcePosition) { Type = ilOptr.Type };
 			else if (v is ILVariable ilv)
 			{
+				if (ilv.IsGlobal)
+					return ilv;
 				if (varMap.ContainsKey(ilv))
 					return varMap[ilv];
 				return (varMap[ilv] = new ILVariable(ilv.SourcePosition));//keep the same name
@@ -78,7 +80,6 @@ namespace Minduscript.Optimization.IL
 			function.Instructions.CloneTo(target.Instructions, out Dictionary<ILVariable, ILVariable> vMap);
 			foreach (var p in function.Params)
 				target.Params.AddLast(vMap[p]);
-			target.ReturnValue = CloneOprand(function.ReturnValue, vMap) as ILVariable;
 			return target;
 		}
 	}

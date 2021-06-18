@@ -13,11 +13,6 @@ namespace Minduscript.IL
 			get;
 			set;
 		}
-		public ILVariable ReturnValue
-		{
-			get;
-			set;
-		}
 
 		public ILOperandCollection<ILInstruction> Instructions
 		{

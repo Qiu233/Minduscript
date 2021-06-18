@@ -67,9 +67,14 @@ namespace Minduscript.Optimization.IL
 			while (s != null)
 			{
 				var il = s.Value;
-				if (IsJmps(il.Type) || il.Type == ILType.End)
+				if (IsJmps(il.Type))
 				{
 					HeaderILs.Add(il.Target as ILInstruction);
+					if (s.Next != null)
+						HeaderILs.Add(s.Next.Value);
+				}
+				if (il.Type == ILType.Ret)
+				{
 					if (s.Next != null)
 						HeaderILs.Add(s.Next.Value);
 				}
@@ -118,7 +123,7 @@ namespace Minduscript.Optimization.IL
 				if (y.Instructions.Count == 0)//signs
 					continue;
 				var last = y.Instructions.Last;
-				if (last.Value.Type == ILType.End)//directly jump to exit
+				if (last.Value.Type == ILType.Ret)//directly jump to exit
 				{
 					ConnectStraight(y, Exit);
 					continue;
@@ -171,7 +176,7 @@ namespace Minduscript.Optimization.IL
 		private void RemoveInaccessibleBlocks()
 		{
 			SetAccessible(Entry);
-			var ina = Blocks.Where(t => !Accessible.Contains(t));
+			var ina = Blocks.Where(t => !Accessible.Contains(t)).ToList();
 			foreach (var block in ina)
 			{
 				Blocks.Remove(block);//O(1)

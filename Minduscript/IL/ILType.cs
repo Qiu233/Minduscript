@@ -20,7 +20,7 @@ namespace Minduscript.IL
 		Mem_Read,//mem_read $var $mem $pos $
 		Mem_Write,//mem_write $var $mem $pos $
 
-		End,//end $ $ $ $
+		Ret,//ret $value $ $ $
 		Call,//call $retV $func $ $
 		Jmp,//jmp $target $ $ $
 		Je,//je $target $a $b $

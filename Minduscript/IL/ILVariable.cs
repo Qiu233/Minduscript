@@ -11,6 +11,11 @@ namespace Minduscript.IL
 	/// </summary>
 	public class ILVariable : ILValue
 	{
+		public bool IsGlobal
+		{
+			get;
+			set;
+		}
 		public ILVariable(SourcePosition src) : base(src)
 		{
 		}

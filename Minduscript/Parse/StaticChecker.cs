@@ -7,26 +7,108 @@ using System.Threading.Tasks;
 
 namespace Minduscript.Parse
 {
+	/// <summary>
+	/// Provides symbol information
+	/// </summary>
+	public sealed class SymbolTableContext
+	{
+		public SymbolTable<string> VarSymbolTable
+		{
+			get;
+			set;
+		}
+		public SymbolTable<string> FuncSymbolTable
+		{
+			get;
+		}
+		public SymbolTable<string> NamespaceSymbolTable
+		{
+			get;
+		}
+		public SymbolTable<string> Root
+		{
+			get;
+		}
+
+		private Dictionary<Expr_Variable, Symbol<string>> VarBind
+		{
+			get;
+		}
+
+		public SymbolTableContext()
+		{
+			NamespaceSymbolTable = new SymbolTable<string>();
+			FuncSymbolTable = new SymbolTable<string>();
+			VarSymbolTable = new SymbolTable<string>();//root
+			Root = VarSymbolTable;
+
+			VarBind = new Dictionary<Expr_Variable, Symbol<string>>();
+		}
+
+		public void PushSymbolTable()
+		{
+			VarSymbolTable = VarSymbolTable.NewSubTable();
+		}
+		public void PopSymbolTable()
+		{
+			VarSymbolTable = VarSymbolTable.Parent;
+		}
+		public bool VarSymbolExist(string ev)
+		{
+			SymbolTable<string> cur = VarSymbolTable;
+			while (cur != null)
+			{
+				if (cur.ExistSymbol(ev))
+					return true;
+				cur = cur.Parent;
+			}
+			return false;
+		}
+		public bool FuncSymbolExist(string name)
+		{
+			return FuncSymbolTable.ExistSymbol(name);
+		}
+
+		/// <summary>
+		/// To bind a Expr_Variable to an existed symbol
+		/// </summary>
+		/// <param name="ev"></param>
+		public void BindVar(Expr_Variable ev)
+		{
+			SymbolTable<string> cur = VarSymbolTable;
+
+			while (cur != null)
+			{
+				if (cur.ExistSymbol(ev.Name))
+					break;
+				cur = cur.Parent;
+			}
+			if (cur == null)
+				return;//failed to bind because the specified variable doesn't exist
+			VarBind[ev] = cur.Symbols.First(t => t.Content == ev.Name);
+		}
+
+		public bool IsVarBound(Expr_Variable ev)
+		{
+			return VarBind.ContainsKey(ev);
+		}
+
+		public bool TryGetVarBind(Expr_Variable ev, out Symbol<string> symbol)
+		{
+			return VarBind.TryGetValue(ev, out symbol);
+		}
+	}
 	public class StaticChecker
 	{
 		private Stmt_Assembly Assembly
 		{
 			get;
 		}
-		private Stack<SymbolTable<string>> SymbolTables
-		{
-			get;
-			set;
-		}
-		private SymbolTable<string> FuncSymbolTable
-		{
-			get;
-		}
-		private SymbolTable<string> NamespaceSymbolTable
-		{
-			get;
-		}
 		private ParserContext Context
+		{
+			get;
+		}
+		private SymbolTableContext SymbolTableContext
 		{
 			get;
 		}
@@ -49,57 +131,20 @@ namespace Minduscript.Parse
 		{
 			get => CurrentFunction != null;
 		}
-		private void PushSymbolTable()
-		{
-			SymbolTables.Push(new SymbolTable<string>());
-		}
-		private void PopSymbolTable()
-		{
-			SymbolTables.Pop();
-		}
-		private bool SymbolExist(string ev)
-		{
-			foreach (var s in SymbolTables)
-			{
-				if (s.ExistSymbol(ev))
-					return true;
-			}
-			return false;
-		}
-		private bool FuncSymbolExist(string name)
-		{
-			return FuncSymbolTable.ExistSymbol(name);
-		}
-		private int SymbolOffset(string ev)
-		{
-			int off = 1;
-			foreach (var s in SymbolTables.Reverse())
-			{
-				if (s.ExistSymbol(ev))
-				{
-					return off + s.GetSymbolOffset(ev);
-				}
-				off += s.Symbols.Count;
-			}
-			return -1;
-		}
 		private StaticChecker(Stmt_Assembly body, ParserContext context)
 		{
 			Assembly = body;
-			NamespaceSymbolTable = new SymbolTable<string>();
-			FuncSymbolTable = new SymbolTable<string>();
-			SymbolTables = new Stack<SymbolTable<string>>();
 			Context = context;
-			PushSymbolTable();
+			SymbolTableContext = new SymbolTableContext();
 		}
 		private void CheckExpr(Expression expr)
 		{
 			if (expr is Expr_Variable ev)
 			{
-				if (!SymbolExist(ev.Name))
+				if (!SymbolTableContext.VarSymbolExist(ev.Name))
 					Context.ThrowStaticCheckingError(ev.SourcePosition, $"Variable should be declared before using:{ev.Name}");
-				ev.IsLocal = IsInFunc;
-				ev.Offset = SymbolOffset(ev.Name);//set the offset
+				else//variable exists
+					SymbolTableContext.BindVar(ev);
 			}
 			else if (expr is Expr_Binary eb)
 			{
@@ -123,14 +168,13 @@ namespace Minduscript.Parse
 		}
 		private void RegisterVariable(Expr_Variable ev)
 		{
-			if (SymbolExist(ev.Name))
+			if (SymbolTableContext.VarSymbolExist(ev.Name))
 			{
 				Context.ThrowStaticCheckingError(ev.SourcePosition, $"Variable definition duplicated:({ev.Name})");
 				return;
 			}
-			SymbolTables.Peek().AddSymbol(ev.Name);
-			ev.IsLocal = IsInFunc;
-			ev.Offset = SymbolOffset(ev.Name);//set the offset
+			SymbolTableContext.VarSymbolTable.AddSymbol(ev.Name);
+			SymbolTableContext.BindVar(ev);//default bind
 		}
 		private void CheckStmt(Statement stmt)
 		{
@@ -147,18 +191,18 @@ namespace Minduscript.Parse
 				IsPreCompiling = false;
 			}
 
-			if (stmt is Stmt_Verbal && CurrentFunction == null)
+			if (stmt is Stmt_Verbal && !(stmt is Stmt_Var) && CurrentFunction == null)
 			{
-				Context.ThrowStaticCheckingError(stmt.SourcePosition, "Verbal statement must be in a function");
+				Context.ThrowStaticCheckingError(stmt.SourcePosition, "Verbal statement except var must be in a function");
 				return;//ignore
 			}
 
 			if (stmt is Stmt_Block sb)
 			{
-				PushSymbolTable();
+				SymbolTableContext.PushSymbolTable();
 				foreach (var s in sb.Statements)
 					CheckStmt(s);
-				PopSymbolTable();
+				SymbolTableContext.PopSymbolTable();
 			}
 			else if (stmt is Stmt_Function sm)
 			{
@@ -167,28 +211,22 @@ namespace Minduscript.Parse
 					Context.ThrowStaticCheckingError(sm.SourcePosition, $"Function cannot be defined inside a function:({sm.FunctionName})");
 					return;//Critical error,stop checking
 				}
-				if (FuncSymbolExist(sm.FunctionName))
+				if (SymbolTableContext.FuncSymbolExist(sm.FunctionName))
 				{
 					Context.ThrowStaticCheckingError(sm.SourcePosition, $"Definition of function duplicated in the same file, function:({sm.FunctionName})");
 				}
 
-				var tmpTables = SymbolTables;
-				SymbolTables = new Stack<SymbolTable<string>>();
-
-				PushSymbolTable();
+				SymbolTableContext.PushSymbolTable();
 
 				CurrentFunction = sm;
-				sm.ReturnValue.Offset = 0;
-				FuncSymbolTable.AddSymbol(sm.FunctionName);
+				SymbolTableContext.FuncSymbolTable.AddSymbol(sm.FunctionName);
 				foreach (var p in sm.Params)
 					RegisterVariable(p);
 				foreach (var s in sm.Code.Statements)
 					CheckStmt(s);
 				CurrentFunction = null;
 
-				PopSymbolTable();
-
-				SymbolTables = tmpTables;
+				SymbolTableContext.PopSymbolTable();
 			}
 			else if (stmt is Stmt_Using su)
 			{
@@ -201,6 +239,10 @@ namespace Minduscript.Parse
 			}
 			else if (stmt is Stmt_Var sv)
 			{
+				if (!IsInFunc && !sv.Declarations.TrueForAll(t => t.Value == null))
+				{
+					Context.ThrowStaticCheckingError(sv.SourcePosition, $"Variables can only be declared without assignment ouside a function");
+				}
 				foreach (var dc in sv.Declarations)
 				{
 					RegisterVariable(dc.Key);
@@ -226,12 +268,14 @@ namespace Minduscript.Parse
 				CheckStmt(si.Else);
 				CheckEmbededStmt(si.Else);
 			}
-			else if (stmt is Stmt_While sw)
+			else if (stmt is Stmt_Loop sl)
 			{
-				CheckExpr(sw.Condition);
-				CurrentLoop = sw;
-				CheckStmt(sw.Code);
-				CheckEmbededStmt(sw.Code);
+				CheckStmt(sl.Initialization);
+				CheckExpr(sl.Condition);
+				CurrentLoop = sl;
+				CheckStmt(sl.Iteration);
+				CheckStmt(sl.Code);
+				CheckEmbededStmt(sl.Code);
 				CurrentLoop = null;
 			}
 			else if (stmt is Stmt_Break sb1)
@@ -252,18 +296,18 @@ namespace Minduscript.Parse
 			}
 			else if (stmt is Stmt_Import si1)
 			{
-				if (SymbolTables.Count > 1)
+				if (SymbolTableContext.VarSymbolTable != SymbolTableContext.Root)
 				{
 					Context.ThrowStaticCheckingError(si1.SourcePosition, $"Import statement cannot be put inside any subscope");
 					return;//critical error
 				}
-				if (NamespaceSymbolTable.ExistSymbol(si1.Namespace))
+				if (SymbolTableContext.NamespaceSymbolTable.ExistSymbol(si1.Namespace))
 				{
 					Context.ThrowStaticCheckingError(si1.SourcePosition, $"Namespace duplicated:{si1.Namespace}");
 					return;
 				}
 				if (si1.Namespace != null)
-					NamespaceSymbolTable.AddSymbol(si1.Namespace);
+					SymbolTableContext.NamespaceSymbolTable.AddSymbol(si1.Namespace);
 			}
 			else if (stmt is Stmt_ASMCall sac)
 			{
@@ -273,24 +317,37 @@ namespace Minduscript.Parse
 		}
 		private void CheckEmbededStmt(Statement stmt)
 		{
-			if (stmt is Stmt_PreCompilation || stmt is Stmt_Var || stmt is Stmt_Using)
+			if (stmt is Stmt_Var || stmt is Stmt_Using)
 			{
-				Context.ThrowStaticCheckingError(stmt.SourcePosition, $"An embedded statement cannot be precompilation or declaration");
+				Context.ThrowStaticCheckingError(stmt.SourcePosition, $"An embedded statement cannot be any declaration");
 			}
 		}
-		public void CheckAll()
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <returns>Symbol context</returns>
+		public SymbolTableContext CheckAll()
 		{
-			foreach (var s in Assembly.Functions)
-				CheckStmt(s);
 			IsPreCompiling = true;
 			foreach (var s in Assembly.Header)
 				CheckStmt(s);
 			IsPreCompiling = false;
+
+			foreach (var s in Assembly.Functions)
+				CheckStmt(s);
+			return SymbolTableContext;
 		}
-		public static void Check(Stmt_Assembly asm, ParserContext context)
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="asm">Assembly root to check</param>
+		/// <param name="context">Parser context</param>
+		/// <returns>Symbol context</returns>
+		public static SymbolTableContext Check(Stmt_Assembly asm, ParserContext context)
 		{
 			StaticChecker sc = new StaticChecker(asm, context);
-			sc.CheckAll();
+			return sc.CheckAll();
 		}
 	}
 }
