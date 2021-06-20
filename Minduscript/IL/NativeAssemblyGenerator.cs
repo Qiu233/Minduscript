@@ -90,7 +90,7 @@ namespace Minduscript.IL
 				if (ilc.Value is string s)
 					return new ParamString(s);
 				else
-					return new ParamConstant((float)ilc.Value);
+					return new ParamConstant(float.Parse(ilc.Value.ToString()));
 			}
 			else if (operand is ILVariable ilv)
 			{

@@ -9,10 +9,10 @@ namespace Minduscript.Lex
 {
 	public class Lexer
 	{
-		public static readonly string[] KeyWords = new string[] { 
-			"assembly", "function", "import", "as", 
-			"using", "global", "if", "else", "while", 
-			"for", "break", "continue", "return", 
+		public static readonly string[] KeyWords = new string[] {
+			"assembly", "function", "import", "as",
+			"using", "global", "if", "else", "while",
+			"for", "break", "continue", "return",
 			"var", "true", "false" };
 		public CompilingInfoHandler LexInfoHandler
 		{
@@ -84,6 +84,14 @@ namespace Minduscript.Lex
 				{
 					Line++;
 					Index++;
+					continue;
+				}
+				else if (Source[Index] == '?')
+				{
+					while (IndexValid() && Source[Index] != '\n')
+					{
+						Index++;
+					}
 					continue;
 				}
 				break;
