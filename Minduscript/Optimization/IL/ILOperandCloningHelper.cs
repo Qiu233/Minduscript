@@ -26,6 +26,8 @@ namespace Minduscript.Optimization.IL
 				return ilm;
 			else if (v is ILGameConst ilcomp)
 				return new ILGameConst(ilcomp.SourcePosition) { Name = ilcomp.Name };
+			else if (v is ILResource ilr)
+				return new ILResource(ilr.SourcePosition) { Name = ilr.Name };
 			else if (v is ILOperator ilOptr)
 				return new ILOperator(ilOptr.SourcePosition) { Type = ilOptr.Type };
 			else if (v is ILVariable ilv)
