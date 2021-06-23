@@ -56,14 +56,13 @@ namespace Minduscript.Optimization.IL
 					}
 					foreach (var ins in function.Instructions)
 					{
+						ILsToRep[il].Add(ins);
 						if (ins.Type == ILType.Ret)
 						{
-							ILsToRep[il].Add(new ILInstruction(ins.SourcePosition, ILType.Set, retV, ins.Target));
+							ins.Type = ILType.Set;
+							ins.Arg1 = ins.Target;
+							ins.Target = retV;
 							ILsToRep[il].Add(new ILInstruction(ins.SourcePosition, ILType.Jmp, last.Value));
-						}
-						else
-						{
-							ILsToRep[il].Add(ins);
 						}
 					}
 				}
