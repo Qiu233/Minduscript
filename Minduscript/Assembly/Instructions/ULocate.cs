@@ -8,7 +8,7 @@ namespace Minduscript.Assembly.Instructions
 {
 	public class ULocate : Instruction
 	{
-		public ULocate(TileTypes target, BuildingGroups group, ParamEvaluable isEnemy, ParamResource ore, ParamEvaluable outX, ParamEvaluable outY, ParamEvaluable found, ParamEvaluable buildingFound) : base(OpCode.ULOCATE, target, group, isEnemy, ore, outX, outY, found, buildingFound)
+		public ULocate(TileTypes target, BuildingGroups group, ParamEvaluable isEnemy, ParamEvaluable ore, ParamEvaluable outX, ParamEvaluable outY, ParamEvaluable found, ParamEvaluable buildingFound) : base(OpCode.ULOCATE, target, group, isEnemy, ore, outX, outY, found, buildingFound)
 		{
 
 		}

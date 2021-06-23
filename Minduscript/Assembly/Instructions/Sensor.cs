@@ -8,7 +8,7 @@ namespace Minduscript.Assembly.Instructions
 {
 	public class Sensor : Instruction
 	{
-		public Sensor(ParamEvaluable result, ParamEvaluable block, ParamResource attr) : base(OpCode.SENSOR, result, block, attr)
+		public Sensor(ParamEvaluable result, ParamEvaluable block, ParamEvaluable attr) : base(OpCode.SENSOR, result, block, attr)
 		{
 
 		}

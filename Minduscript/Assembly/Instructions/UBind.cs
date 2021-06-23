@@ -8,7 +8,7 @@ namespace Minduscript.Assembly.Instructions
 {
 	public class UBind : Instruction
 	{
-		public UBind(ParamResource unit) : base(OpCode.UBIND, unit)
+		public UBind(ParamEvaluable unit) : base(OpCode.UBIND, unit)
 		{
 
 		}

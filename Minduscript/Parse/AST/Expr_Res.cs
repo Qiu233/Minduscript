@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Minduscript.Parse.AST
 {
-	public class Expr_Res:Expression
+	public class Expr_Res : Expression
 	{
 		public string Name
 		{
