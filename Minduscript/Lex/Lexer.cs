@@ -262,12 +262,21 @@ namespace Minduscript.Lex
 				token.Value = c;
 				token.Type = TokenType.OPTR;
 			}
-			else if (Source[Index] == '#' || Source[Index] == '@')
+			else if (Source[Index] == '#')
 			{
 				content.Append(Source[Index++]);
-				string c = content.ToString();
-				token.Value = c;
+				token.Value = content.ToString();
 				token.Type = TokenType.OPTR;
+			}
+			else if (Source[Index] == '@')
+			{
+				Index++;
+				while (IndexValid() && (IsLetter(Source[Index]) || IsNumber(Source[Index]) || Source[Index] == '_' || Source[Index] == '-'))
+					content.Append(Source[Index++]);
+				token.Value = content.ToString();
+				if (token.Value.Length == 0)
+					ThrowLexingError(token.SourcePosition, "No resource content specified");
+				token.Type = TokenType.RESOURCE;
 			}
 			return token;
 		}

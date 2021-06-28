@@ -10,6 +10,7 @@ namespace Minduscript.Lex
 	{
 		KEYWORD,
 		IDEN,
+		RESOURCE,
 		CONST_STRING,
 		CONST_NUMBER,
 

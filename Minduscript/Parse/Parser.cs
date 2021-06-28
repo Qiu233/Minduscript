@@ -373,10 +373,9 @@ namespace Minduscript.Parse
 				Accept(TokenType.PARENTHESES_R);
 				return e;
 			}
-			else if (Match(TokenType.OPTR, "@"))
+			else if (Match(TokenType.RESOURCE))
 			{
-				Accept();
-				Expr_Res res = new Expr_Res(SourcePosition) { Name = Accept(TokenType.IDEN).Value };
+				Expr_Res res = new Expr_Res(SourcePosition) { Name = Accept().Value };
 				return res;
 			}
 			else if (Match(TokenType.IDEN))//call/variable
