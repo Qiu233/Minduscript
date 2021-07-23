@@ -12,9 +12,9 @@ namespace Minduscript.Optimization.IL
 	/// Instructions typed param and ret will be removed
 	/// Time complexity: O(n)
 	/// </summary>
-	public class ExpandingOptimizer : BaseOptimizer
+	public class ExpandingOptimizer : ILBaseOptimizer
 	{
-		public ExpandingOptimizer(OptimizerContext ctx) : base(ctx)
+		public ExpandingOptimizer(ILOptimizerContext ctx) : base(ctx)
 		{
 		}
 
@@ -23,7 +23,6 @@ namespace Minduscript.Optimization.IL
 			Log("Running expanding optimization...");
 
 			Dictionary<ILInstruction, List<ILInstruction>> ILsToRep = new Dictionary<ILInstruction, List<ILInstruction>>();
-			Dictionary<ILInstruction, List<ILInstruction>> RetsToRep = new Dictionary<ILInstruction, List<ILInstruction>>();
 			ILOperandCollection<ILInstruction> Params = new ILOperandCollection<ILInstruction>();
 			//begin to expand the calls
 			foreach (var il in SourceBind.Instructions)

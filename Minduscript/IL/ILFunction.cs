@@ -29,5 +29,9 @@ namespace Minduscript.IL
 			Instructions = new ILOperandCollection<ILInstruction>();
 			Params = new ILOperandCollection<ILVariable>();
 		}
+		public override string ToString()
+		{
+			return Name;
+		}
 	}
 }

@@ -13,9 +13,9 @@ namespace Minduscript.Optimization.IL
 	/// Removing nops
 	/// 
 	/// </summary>
-	public class RedundencyOptimizer : BaseOptimizer
+	public class RedundencyOptimizer : ILBaseOptimizer
 	{
-		public RedundencyOptimizer(OptimizerContext ctx) : base(ctx)
+		public RedundencyOptimizer(ILOptimizerContext ctx) : base(ctx)
 		{
 		}
 

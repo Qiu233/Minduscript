@@ -115,8 +115,8 @@ namespace Minduscript.IL
 		{
 			return name switch
 			{
-				"read" => new Read(GetVar(
-					ps[0].Target as ILVariable),
+				"read" => new Read(
+					GetEvaluable(ps[0].Target as ILValue),
 					GetEvaluable(ps[1].Target as ILValue),
 					GetEvaluable(ps[2].Target as ILValue)),
 				"write" => new Read(

@@ -37,7 +37,7 @@ namespace Minduscript.Lex
 		}
 		public Lexer(string code, CompilingInfoHandler errorHandler)
 		{
-			Line = 0;
+			Line = 1;
 			Source = code.ToCharArray();
 			LexInfoHandler = errorHandler;
 		}

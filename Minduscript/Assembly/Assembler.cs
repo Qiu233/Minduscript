@@ -9,7 +9,7 @@ namespace Minduscript.Assembly
 {
 	public class Assembler
 	{
-		private Dictionary<string, ParamVariable> Variables
+		private CodeTarget Target
 		{
 			get;
 		}
@@ -17,31 +17,26 @@ namespace Minduscript.Assembly
 		{
 			get
 			{
-				if (Variables.ContainsKey(name))
-					return Variables[name];
-				return (Variables[name] = new ParamVariable(name));
+				if (Target.Variables.ContainsKey(name))
+					return Target.Variables[name];
+				return (Target.Variables[name] = new ParamVariable(name));
 			}
-		}
-		private LinkedList<Instruction> Instructions
-		{
-			get;
 		}
 		public int CurrentInstructionIndex
 		{
-			get => Instructions.Count;
+			get => Target.Instructions.Count;
 		}
 		public Assembler()
 		{
-			Instructions = new LinkedList<Instruction>();
-			Variables = new Dictionary<string, ParamVariable>();
+			Target = new CodeTarget();
 		}
 		public LinkedListNode<Instruction> Assemble<T>(T inst) where T : Instruction
 		{
-			return Instructions.AddLast(inst);
+			return Target.Instructions.AddLast(inst);
 		}
 		public void AssembleToASMCode(TextWriter tw)
 		{
-			foreach (var inst in Instructions)
+			foreach (var inst in Target.Instructions)
 			{
 				inst.Compile(tw);
 				tw.WriteLine();

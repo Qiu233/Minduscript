@@ -5,14 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Minduscript.Optimization.IL
+namespace Minduscript.Optimization
 {
 	/// <summary>
 	/// Base of il optimizers
 	/// </summary>
-	public abstract class BaseOptimizer
+	public abstract class BaseOptimizer<T>
 	{
-		public OptimizerContext Context
+		public OptimizerContext<T> Context
 		{
 			get;
 		}
@@ -20,9 +20,9 @@ namespace Minduscript.Optimization.IL
 		/// IL source bound to this optmizer
 		/// Will be changed after optmization completed
 		/// </summary>
-		public ILFunction SourceBind
+		public T SourceBind
 		{
-			get => Context.SourceBind;
+			get => Context.Bind;
 		}
 		/// <summary>
 		/// Run this optimization
@@ -32,16 +32,16 @@ namespace Minduscript.Optimization.IL
 		/// 
 		/// </summary>
 		/// <param name="src">IL source to bind to this optimizer</param>
-		public BaseOptimizer(OptimizerContext ctx)
+		public BaseOptimizer(OptimizerContext<T> ctx)
 		{
 			Context = ctx;
 		}
 
-		protected void Log(string msg)
+		protected virtual void Log(string msg)
 		{
-			Context.CompilerContext.Log($"[{SourceBind.Name}]{msg}");
+			Context.CompilerContext.Log($"[{SourceBind}]{msg}");
 		}
-		protected void ThrowError(string err)
+		protected virtual void ThrowError(string err)
 		{
 			Context.CompilerContext.CompilingInfoHandler.ThrowContextError("Optimizing", err);
 		}

@@ -94,8 +94,8 @@ namespace Minduscript
 				//optimizations
 				foreach (var func in asm.Functions)
 				{
-					Optimization.IL.AssembledOptimizer.
-						GetDefaultOptimizer(new Optimization.IL.OptimizerContext(func, this)).
+					Optimization.IL.ILAssembledOptimizer.
+						GetDefaultOptimizer(new Optimization.IL.ILOptimizerContext(func, this)).
 						Run();
 				}
 				AssembledILAssemblies[index] = asm;
