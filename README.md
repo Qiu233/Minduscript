@@ -1,6 +1,14 @@
 # Minduscript
 Minduscript is a structured programming language, which can be compiled into Mindustry processor assembly code.
 
+# How to compile Minduscript
+For example, to compile file test.ms, run bat command:  
+```bat
+Minduscript.exe -i test.ms -o test.asm
+```
+Then the test.ms file will be compiled into test.asm, after which you can copy the content of test.asm into a mindustry processor.  
+Run Minduscript.exe without arguments to show the help.
+
 # Overview
 As you will see, Minduscript code looks like js.  
 But the main difference is that Minduscript's function does not support recursive calling.  
