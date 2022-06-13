@@ -151,15 +151,20 @@ namespace Minduscript.Parse
 			else//local
 				return SymboledVars[s] = GetSVar(ev.SourcePosition);
 		}
+
 		private ILValue GenerateExpressionR(Expression expr, ILVariable defaultTargetVar = null)
 		{
 			if (expr is Expr_ConstNumber ecn)
 			{
-				return CreateConst(ecn.Value, ecn.SourcePosition.Line);
+				return new ILConstNumber(ecn.SourcePosition) { Content = ecn.Value };
 			}
 			else if (expr is Expr_ConstString ecs)
 			{
-				return CreateConst(ecs.Value, ecs.SourcePosition.Line);
+				return new ILConstString(ecs.SourcePosition) { Content = ecs.Value };
+			}
+			else if (expr is Expr_Const econst)
+			{
+				return new ILConstPredefined(econst.SourcePosition) { Content = econst.Value };
 			}
 			else if (expr is Expr_Variable ev)
 			{
@@ -200,7 +205,7 @@ namespace Minduscript.Parse
 					if (ms.Count == 0)
 					{
 						Context.ThrowILGeneratingError(ec.SourcePosition, $"Function cannot be called before being defined:({ec.Function})");
-						return CreateConst(0, ec.SourcePosition.Line);
+						return new ILConstNumber(ec.SourcePosition) { Content = 0 };
 					}
 					func = ms[0];
 				}
@@ -209,20 +214,20 @@ namespace Minduscript.Parse
 					if (!Target.Namespaces.ContainsKey(ec.Namespace))
 					{
 						Context.ThrowILGeneratingError(ec.SourcePosition, $"No such namespace:({ec.Namespace})");
-						return CreateConst(0, ec.SourcePosition.Line);
+						return new ILConstNumber(ec.SourcePosition) { Content = 0 };
 					}
 					var ms = Target.Namespaces[ec.Namespace].Functions.Where(t => t.Name == ec.Function).ToList();
 					if (ms.Count == 0)
 					{
 						Context.ThrowILGeneratingError(ec.SourcePosition, $"No such function ({ec.Function}) in namespace:({ec.Namespace})");
-						return CreateConst(0, ec.SourcePosition.Line);
+						return new ILConstNumber(ec.SourcePosition) { Content = 0 };
 					}
 					func = ms[0];
 				}
 				if (ps.Count != func.Params.Count)
 				{
 					Context.ThrowILGeneratingError(ec.SourcePosition, $"Number of args does not match, calling function ({ec.Function}), existed:{ps.Count}, required:{func.Params.Count}");
-					return CreateConst(0, ec.SourcePosition.Line);
+					return new ILConstNumber(ec.SourcePosition) { Content = 0 };
 				}
 				ILInstructions.AddLast(new ILInstruction(ec.SourcePosition, ILType.Call, retV, func));
 				return retV;
@@ -254,10 +259,6 @@ namespace Minduscript.Parse
 				Target.Functions.Add(func);
 				Context.CompilerContext.Log($"Function generation completed:({func.Name})");
 			}
-		}
-		private ILConst CreateConst(object v, int line)
-		{
-			return new ILConst(new SourcePosition(Context.File, line)) { Value = v };
 		}
 		private static void BackPatch(HashSet<ILInstruction> a, ILInstruction target)
 		{
@@ -334,7 +335,7 @@ namespace Minduscript.Parse
 				else
 				{
 					ILValue ilv = GenerateExpressionR(expr);
-					ILInstruction jt = new ILInstruction(expr.SourcePosition, ILType.Je, null, ilv, CreateConst(1, expr.SourcePosition.Line));
+					ILInstruction jt = new ILInstruction(expr.SourcePosition, ILType.Je, null, ilv, new ILConstNumber(expr.SourcePosition) { Content = 1 });
 					ILInstruction jf = new ILInstruction(expr.SourcePosition, ILType.Jmp, null);
 					Entry.ETrue.Add(jt);
 					Entry.EFalse.Add(jf);
@@ -484,7 +485,8 @@ namespace Minduscript.Parse
 				}
 				foreach (var p in ps)
 					ILInstructions.AddLast(new ILInstruction(p.SourcePosition, ILType.Param, p));
-				ILInstructions.AddLast(new ILInstruction(sac.SourcePosition, ILType.ASMCall, new ILConst(new SourcePosition()) { Value = sac.Function }));
+
+				ILInstructions.AddLast(new ILInstruction(sac.SourcePosition, ILType.ASMCall, new ILConstPredefined(sac.SourcePosition) { Content = sac.Function }));
 			}
 		}
 		private void GenerateImports()

@@ -99,10 +99,7 @@ namespace Minduscript.IL
 					Out.Write($"V{ilv.GetHashCode().ToString("X8")}");
 				else if (operand is ILConst ilc)
 				{
-					if (ilc.Value is string)
-						Out.Write($"\"{ilc.Value}\"");
-					else
-						Out.Write(ilc.Value.ToString());
+					Out.Write(ilc.Value);
 				}
 				else if (operand is ILInstruction ili)
 					Out.Write(GetProcessedIndex(ili.GetHashCode()));

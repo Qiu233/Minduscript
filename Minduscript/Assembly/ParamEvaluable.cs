@@ -12,7 +12,7 @@ namespace Minduscript.Assembly
 		}
 		public static implicit operator ParamEvaluable(float s)
 		{
-			return new ParamConstant(s);
+			return new ParamConstant(s.ToString());
 		}
 	}
 }

@@ -20,7 +20,7 @@ namespace Minduscript.Assembly
 		}
 		public override string GetASMCode()
 		{
-			return $"\"{Value}\"";
+			return Value;
 		}
 	}
 }

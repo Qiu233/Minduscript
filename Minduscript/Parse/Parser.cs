@@ -373,9 +373,19 @@ namespace Minduscript.Parse
 				Accept(TokenType.PARENTHESES_R);
 				return e;
 			}
+			else if (Match(TokenType.OPTR) && CurrentToken.Value == "-")
+			{
+				Accept();//-
+				return new Expr_Binary(SourcePosition)
+				{
+					Left = new Expr_ConstNumber(SourcePosition) { Value = 0 },
+					Right = E(),
+					Operator = "-"
+				};
+			}
 			else if (Match(TokenType.RESOURCE))
 			{
-				Expr_Res res = new Expr_Res(SourcePosition) { Name = Accept().Value };
+				Expr_Res res = new(SourcePosition) { Name = Accept().Value };
 				return res;
 			}
 			else if (Match(TokenType.IDEN))//call/variable
@@ -435,20 +445,26 @@ namespace Minduscript.Parse
 			else if (Match(TokenType.KEYWORD, "true"))
 			{
 				Accept();
-				Expr_ConstNumber ecn = new Expr_ConstNumber(SourcePosition)
+				return new Expr_Const(SourcePosition)
 				{
-					Value = 1
+					Value = "true"
 				};
-				return ecn;
 			}
 			else if (Match(TokenType.KEYWORD, "false"))
 			{
 				Accept();
-				Expr_ConstNumber ecn = new Expr_ConstNumber(SourcePosition)
+				return new Expr_Const(SourcePosition)
 				{
-					Value = 0
+					Value = "false"
 				};
-				return ecn;
+			}
+			else if (Match(TokenType.KEYWORD, "null"))
+			{
+				Accept();
+				return new Expr_Const(SourcePosition)
+				{
+					Value = "null"
+				};
 			}
 			return null;
 		}

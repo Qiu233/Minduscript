@@ -6,15 +6,14 @@ using System.Threading.Tasks;
 
 namespace Minduscript.IL
 {
-	public class ILConst : ILValue
+	public abstract class ILConst : ILValue
 	{
 		/// <summary>
 		/// string or number
 		/// </summary>
-		public object Value
+		public abstract string Value
 		{
 			get;
-			set;
 		}
 		public ILConst(SourcePosition src) : base(src)
 		{

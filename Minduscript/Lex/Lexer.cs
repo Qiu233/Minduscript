@@ -13,7 +13,7 @@ namespace Minduscript.Lex
 			"assembly", "function", "import", "as",
 			"using", "global", "if", "else", "while",
 			"for", "break", "continue", "return",
-			"var", "true", "false" };
+			"var", "true", "false", "null" };
 		public CompilingInfoHandler LexInfoHandler
 		{
 			get;

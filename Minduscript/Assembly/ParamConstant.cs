@@ -6,17 +6,17 @@ namespace Minduscript.Assembly
 {
 	public class ParamConstant : ParamEvaluable
 	{
-		public float Value
+		public string Value
 		{
 			get;
 		}
-		public ParamConstant(float value)
+		public ParamConstant(string value)
 		{
 			Value = value;
 		}
 		public static implicit operator ParamConstant(float s)
 		{
-			return new ParamConstant(s);
+			return new ParamConstant(s.ToString());
 		}
 		public override string GetASMCode()
 		{

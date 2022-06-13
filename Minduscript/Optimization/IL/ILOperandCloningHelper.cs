@@ -18,8 +18,12 @@ namespace Minduscript.Optimization.IL
 		/// <returns></returns>
 		private static ILOperand CloneOprand(ILOperand v, Dictionary<ILVariable, ILVariable> varMap)//O(1)
 		{
-			if (v is ILConst ilc)
-				return new ILConst(ilc.SourcePosition) { Value = ilc.Value };
+			if (v is ILConstNumber ilcn)
+				return new ILConstNumber(ilcn.SourcePosition) { Content = ilcn.Content };
+			else if (v is ILConstString ilcs)
+				return new ILConstString(ilcs.SourcePosition) { Content = ilcs.Content };
+			else if (v is ILConstPredefined ilcp)
+				return new ILConstPredefined(ilcp.SourcePosition) { Content = ilcp.Content };
 			else if (v is ILInstruction ilins)
 				return ilins;//temporarily
 			else if (v is ILFunction ilm)//function ref

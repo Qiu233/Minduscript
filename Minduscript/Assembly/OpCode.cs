@@ -24,5 +24,7 @@ namespace Minduscript.Assembly
 		UCONTROL,
 		URADAR,
 		ULOCATE,
+		WAIT,
+		LOOKUP
 	}
 }

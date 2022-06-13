@@ -87,10 +87,10 @@ namespace Minduscript.IL
 		{
 			if (operand is ILConst ilc)
 			{
-				if (ilc.Value is string s)
-					return new ParamString(s);
+				if (ilc is ILConstString)
+					return new ParamString(ilc.Value);
 				else
-					return new ParamConstant(float.Parse(ilc.Value.ToString()));
+					return new ParamConstant(ilc.Value);
 			}
 			else if (operand is ILVariable ilv)
 			{
@@ -189,6 +189,12 @@ namespace Minduscript.IL
 					GetEvaluable(ps[5].Target as ILValue),
 					GetEvaluable(ps[6].Target as ILValue),
 					GetEvaluable(ps[7].Target as ILValue)),
+				"lookup" => new LookUp(
+					GetAttribute<GameElements>(ps[0].Target as ILGameConst),
+					GetEvaluable(ps[1].Target as ILValue),
+					GetEvaluable(ps[2].Target as ILValue)),
+				"wait" => new Wait(
+					GetEvaluable(ps[0].Target as ILValue)),
 				_ => null,
 			};
 		}
@@ -282,6 +288,9 @@ namespace Minduscript.IL
 						break;
 					case ILType.Call:
 						Params.Clear();
+						break;
+					case ILType.Ret:
+						Assembler.Assemble(new End());
 						break;
 					default:
 						throw new AssemblerException("Instructions of param and call cannot be passed to final assembler");

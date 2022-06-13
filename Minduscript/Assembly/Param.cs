@@ -8,7 +8,7 @@ namespace Minduscript.Assembly
 	{
 		public static implicit operator Param(float f)
 		{
-			return new ParamConstant(f);
+			return new ParamConstant(f.ToString());
 		}
 		public static implicit operator Param(string f)
 		{
